@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/VertexLayout.h"
-#include "TP/Buffer.h"
+#include "Engine/Buffers.h"
 
 class Skybox {
 public:

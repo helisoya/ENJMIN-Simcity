@@ -4,7 +4,7 @@
 
 Light::Light()
 {
-	direction = Vector3::Down + Vector3::Right * 0.25f;
+	direction = Vector3::Up + Vector3::Right;
 	position = Vector3::Up * 70;
 	lookAt = position + direction;
 		
@@ -22,16 +22,15 @@ void Light::Generate(DeviceResources* deviceRes)
 
 void Light::Apply(DeviceResources* deviceRes)
 {
-	LightData data = {};
-	data.LightPosition = Vector4(position.x, position.y, position.z , 0);
-	data.Ambiant = ambiant;
-	data.Diffuse = diffuse;
-	data.Direction = direction;
-	data.LightView = view.Transpose();
-	data.LightProjection = projection.Transpose();
-	data.pad = 0;
+	constantBufferLight.data.LightPosition = Vector4(position.x, position.y, position.z , 0);
+	constantBufferLight.data.Ambiant = ambiant;
+	constantBufferLight.data.Diffuse = diffuse;
+	constantBufferLight.data.Direction = direction;
+	constantBufferLight.data.LightView = view.Transpose();
+	constantBufferLight.data.LightProjection = projection.Transpose();
+	constantBufferLight.data.pad = 0;
 
-	constantBufferLight.SetData(data,deviceRes);
+	constantBufferLight.UpdateBuffer(deviceRes);
 	constantBufferLight.ApplyToVS(deviceRes, 2);
 	constantBufferLight.ApplyToPS(deviceRes, 0);
 }

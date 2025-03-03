@@ -33,8 +33,10 @@
 
 #include <d3d11_1.h>
 #include <dxgi1_6.h>
+#include "d3d11shadertracing.h"
 
 #include <DirectXMath.h>
+#include <DirectXCollision.h>
 #include <DirectXColors.h>
 
 #include <algorithm>
@@ -56,6 +58,7 @@
 #include <fstream>
 #include <vector>
 #include <map>
+#include <array>
 
 #ifdef _DEBUG
 #include <dxgidebug.h>

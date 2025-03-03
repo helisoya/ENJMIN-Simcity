@@ -7,17 +7,15 @@
 
 #include "PerlinNoise.hpp"
 #include "Engine/Shader.h"
+#include "Engine/Buffers.h"
 #include "Engine/VertexLayout.h"
-#include "TP/Chunck.h"
-#include "TP/Buffer.h"
-#include "TP/Camera.h"
 #include "Engine/Texture.h"
-#include "TP/Block.h"
-#include "TP/Skybox.h"
-#include "TP/World.h"
-#include "TP/Light.h";
-#include "Engine/BlendState.h"
-#include "Engine/RenderTarget.h"
+#include "Engine/DefaultResources.h"
+#include "Minicraft/World.h"
+#include "Minicraft/Player.h"
+#include "Minicraft/Utils.h"
+#include "Engine/Light.h"
+#include "Minicraft/Skybox.h"
 
 extern void ExitGame() noexcept;
 
@@ -27,20 +25,20 @@ using namespace DirectX::SimpleMath;
 using Microsoft::WRL::ComPtr;
 
 // Global stuff
-Shader* basicShader;
-Shader* skyboxShader;
-Shader* waterShader;
+DefaultResources gpuResources;
+Shader basicShader(L"Basic");
+Shader blockShader(L"Block");
+Shader skyboxShader(L"Skybox");
+VertexBuffer<VertexLayout_PositionColor> crosshairLine;
 
-
-BlendState blendStateDefault;
-BlendState blendStateWater(D3D11_BLEND_ONE, D3D11_BLEND_INV_SRC_ALPHA, D3D11_BLEND_OP_ADD);
-Camera camera(60,1);
 Texture texture(L"terrain");
 Texture textureSky(L"skybox");
-
 World world;
-Light light;
+Player player(&world, Vector3(16, 32, 16));
+OrthographicCamera hudCamera(400, 600);
 
+Light light;
+Skybox skybox;
 
 // Game
 Game::Game() noexcept(false) {
@@ -49,7 +47,6 @@ Game::Game() noexcept(false) {
 }
 
 Game::~Game() {
-	delete basicShader;
 	g_inputLayouts.clear();
 }
 
@@ -66,32 +63,33 @@ void Game::Initialize(HWND window, int width, int height) {
 	m_deviceResources->CreateDeviceResources();
 	m_deviceResources->CreateWindowSizeDependentResources();
 
-	basicShader = new Shader(L"Basic");
-	skyboxShader = new Shader(L"Skybox");
-	waterShader = new Shader(L"Water");
-	basicShader->Create(m_deviceResources.get());
-	skyboxShader->Create(m_deviceResources.get());
-	waterShader->Create(m_deviceResources.get());
+	basicShader.Create(m_deviceResources.get());
+	blockShader.Create(m_deviceResources.get());
+	skyboxShader.Create(m_deviceResources.get());
+	GenerateInputLayout<VertexLayout_PositionColor>(m_deviceResources.get(), &basicShader);
+	GenerateInputLayout<VertexLayout_PositionNormalUV>(m_deviceResources.get(), &blockShader);
 
 	texture.Create(m_deviceResources.get());
 	textureSky.Create(m_deviceResources.get());
 
+	gpuResources.Create(m_deviceResources.get());
 
-	auto device = m_deviceResources->GetD3DDevice();
+	player.GenerateGPUResources(m_deviceResources.get());
+	player.GetCamera()->UpdateAspectRatio((float)width / (float)height);
+	hudCamera.UpdateSize((float)width, (float)height);
 
-
-	GenerateInputLayout<VertexLayout_PositionNormalUV>(m_deviceResources.get(), basicShader);
-
-	// TP: allouer vertexBuffer ici
-
-	//world.Generate(m_deviceResources.get());
-	world.GenerateFromFile(m_deviceResources.get(), L"TestMap");
 	light.Generate(m_deviceResources.get());
-	camera = Camera(60, (float)width / (float)height);
 
-	blendStateDefault.Create(m_deviceResources.get());
-	blendStateWater.Create(m_deviceResources.get());
+	world.Generate(m_deviceResources.get());
+	//world.GenerateFromFile(m_deviceResources.get(), L"TestMap");
+	skybox.Generate(m_deviceResources.get());
 
+	crosshairLine.PushVertex({ {-7, 0, 1, 1}, {1, 1, 1, 1} });
+	crosshairLine.PushVertex({ {6, 0, 1, 1}, {1, 1, 1, 1} });
+	crosshairLine.PushVertex({ {0, -6, 1, 1}, {1, 1, 1, 1} });
+	crosshairLine.PushVertex({ {0, 7, 1, 1}, {1, 1, 1, 1} });
+
+	crosshairLine.Create(m_deviceResources.get());
 }
 
 void Game::Tick() {
@@ -99,26 +97,25 @@ void Game::Tick() {
 	// We pass Update as a callback to Tick() because StepTimer can be set to a "fixed time" step mode, allowing us to call Update multiple time in a row if the framerate is too low (useful for physics stuffs)
 	m_timer.Tick([&]() { Update(m_timer); });
 
-	Render();
+	Render(m_timer);
 }
 
 // Updates the world.
 void Game::Update(DX::StepTimer const& timer) {
 	auto const kb = m_keyboard->GetState();
-	//auto const ms = m_mouse->GetState();
+	auto const ms = m_mouse->GetState();
+	m_mouse->ResetScrollWheelValue();
 	
-	// add kb/mouse interact here
-	
+	player.Update(timer.GetElapsedSeconds(), kb, ms);
+
 	if (kb.Escape)
 		ExitGame();
 
 	auto const pad = m_gamePad->GetState(0);
-
-	camera.Update(timer.GetElapsedSeconds(), kb, &m_mouse->Get(),world);
 }
 
 // Draws the scene.
-void Game::Render() {
+void Game::Render(DX::StepTimer const& timer) {
 	// Don't try to render anything before the first Update.
 	if (m_timer.GetFrameCount() == 0)
 		return;
@@ -128,55 +125,41 @@ void Game::Render() {
 	auto depthStencil = m_deviceResources->GetDepthStencilView();
 	auto const viewport = m_deviceResources->GetScreenViewport();
 
-	context->ClearRenderTargetView(renderTarget, Colors::DeepSkyBlue);
+	context->ClearRenderTargetView(renderTarget, Colors::CornflowerBlue);
 	context->ClearDepthStencilView(depthStencil, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	context->RSSetViewports(1, &viewport);
 	context->OMSetRenderTargets(1, &renderTarget, depthStencil);
 	
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-
+	
 	ApplyInputLayout<VertexLayout_PositionNormalUV>(m_deviceResources.get());
 
-	
 	// Draw Skybox
 
-	skyboxShader->Apply(m_deviceResources.get());
+	skyboxShader.Apply(m_deviceResources.get());
 
-	camera.ApplyCamera(m_deviceResources.get());
+	player.GetCamera()->ApplyCamera(m_deviceResources.get());
 	textureSky.Apply(m_deviceResources.get());
-	blendStateDefault.Apply(m_deviceResources.get());
 
-	world.DrawSkybox(camera.GetPosition(), m_deviceResources.get());
-
+	skybox.Draw(m_deviceResources.get());
 	
-	
+	// Draw World
 
-	// Rendering World
-
-	basicShader->Apply(m_deviceResources.get());
-	
-	camera.ApplyCamera(m_deviceResources.get());
-	texture.Apply(m_deviceResources.get());
+	player.GetCamera()->ApplyCamera(m_deviceResources.get());
 	light.Apply(m_deviceResources.get());
-	blendStateDefault.Apply(m_deviceResources.get());
-	
 
-	world.Draw(m_deviceResources.get(), camera);
-
-	// Rendering Water
-
-	waterShader->Apply(m_deviceResources.get());
-
-	camera.ApplyCamera(m_deviceResources.get());
+	blockShader.Apply(m_deviceResources.get());
 	texture.Apply(m_deviceResources.get());
-	light.Apply(m_deviceResources.get());
-	blendStateWater.Apply(m_deviceResources.get());
+	world.Draw(player.GetCamera(), m_deviceResources.get());
+	player.Draw(m_deviceResources.get());
 
-	world.DrawWater(m_deviceResources.get(), camera);
+	hudCamera.ApplyCamera(m_deviceResources.get());
+	ApplyInputLayout<VertexLayout_PositionColor>(m_deviceResources.get());
+	basicShader.Apply(m_deviceResources.get());
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+	crosshairLine.Apply(m_deviceResources.get());
+	context->Draw(4, 0);
 
-
-	// envoie nos commandes au GPU pour etre afficher � l'�cran
 	m_deviceResources->Present();
 }
 
@@ -207,7 +190,8 @@ void Game::OnWindowSizeChanged(int width, int height) {
 
 	// The windows size has changed:
 	// We can realloc here any resources that depends on the target resolution (post processing etc)
-	camera.UpdateAspectRatio((float)width / (float)height);
+	player.GetCamera()->UpdateAspectRatio((float)width / (float)height);
+	hudCamera.UpdateSize((float)width, (float)height);
 }
 
 void Game::OnDeviceLost() {
