@@ -29,6 +29,45 @@ World::World() {
 			}
 		}
 	}
+
+	for (int x = 0; x < WORLD_SIZE * CHUNK_SIZE * WORLD_SIZE * CHUNK_SIZE; x++) {
+		buildings[x] = NOTHING;
+	}
+
+	BuildingData data = {};
+	data.model = new Cube3D(LOG);
+	data.positions = new std::vector<Vector3>();
+	buildingsPositions[TREE] = data;
+
+	data = {};
+	data.model = new Cube3D(WOOD);
+	data.positions = new std::vector<Vector3>();
+	buildingsPositions[HOUSE] = data;
+
+	data = {};
+	data.model = new Cube3D(SLAB);
+	data.positions = new std::vector<Vector3>();
+	buildingsPositions[SHOP] = data;
+
+	data = {};
+	data.model = new Cube3D(BRICK);
+	data.positions = new std::vector<Vector3>();
+	buildingsPositions[FACTORY] = data;
+
+	data = {};
+	data.model = new Cube3D(DIAMOND_BLOCK);
+	data.positions = new std::vector<Vector3>();
+	buildingsPositions[WATERPLANT] = data;
+
+	data = {};
+	data.model = new Cube3D(GOLD_BLOCK);
+	data.positions = new std::vector<Vector3>();
+	buildingsPositions[ENERGYPLANT] = data;
+
+	data = {};
+	data.model = new Cube3D(OBSIDIAN);
+	data.positions = new std::vector<Vector3>();
+	buildingsPositions[ROAD] = data;
 }
 
 World::~World() {
@@ -71,10 +110,7 @@ void World::Generate(DeviceResources* deviceRes) {
 		}
 	}
 
-	for (int idx = 0; idx < WORLD_SIZE * WORLD_SIZE * WORLD_HEIGHT; idx++)
-		chunks[idx]->Generate(deviceRes);
-
-	DefaultResources::Get()->cbModel.Create(deviceRes);
+	Create(deviceRes);
 }
 
 void World::GenerateFromFile(DeviceResources* deviceRes, std::wstring filePath)
@@ -136,8 +172,7 @@ void World::GenerateFromFile(DeviceResources* deviceRes, std::wstring filePath)
 		y++;
 	}
 
-	for (int idx = 0; idx < WORLD_SIZE * WORLD_SIZE * WORLD_HEIGHT; idx++)
-		chunks[idx]->Generate(deviceRes);
+	Create(deviceRes);
 }
 
 void World::Draw(Camera* camera, DeviceResources* deviceRes) {
@@ -166,6 +201,23 @@ void World::Draw(Camera* camera, DeviceResources* deviceRes) {
 			}
 		}
 	}
+
+	// Render buildings
+	gpuRes->opaque.Apply(deviceRes);
+	gpuRes->defaultDepth.Apply(deviceRes);
+	Building keys[] = { TREE,ROAD,HOUSE,SHOP,FACTORY,ENERGYPLANT,WATERPLANT};
+	for (Building key : keys) {
+		for (Vector3 position : *(buildingsPositions[key].positions)) {
+			gpuRes->cbModel.data.model = Matrix::CreateTranslation(position).Transpose();
+			gpuRes->cbModel.UpdateBuffer(deviceRes);
+			buildingsPositions[key].model->Draw(deviceRes);
+		}
+
+	}
+
+
+	// Clean
+
 	gpuRes->cbModel.data.model = Matrix::Identity;
 	gpuRes->cbModel.UpdateBuffer(deviceRes);
 }
@@ -213,4 +265,32 @@ void World::UpdateBlock(int gx, int gy, int gz, BlockId block) {
 	MakeChunkDirty(gx, gy - 1, gz);
 	MakeChunkDirty(gx, gy, gz + 1);
 	MakeChunkDirty(gx, gy, gz - 1);
+}
+
+Building World::GetBuilding(int x, int y)
+{
+	if (x < 0 || y < 0 || y >= CHUNK_SIZE * WORLD_SIZE || x >= CHUNK_SIZE * WORLD_SIZE) return NOTHING;
+	return buildings[x + y * CHUNK_SIZE * WORLD_SIZE];
+}
+
+void World::PlaceBuilding(Building type, int x, int y, int z)
+{
+	buildings[x + z * CHUNK_SIZE * WORLD_SIZE] = type;
+	buildingsPositions[type].positions->push_back(Vector3(x,y,z));
+}
+
+void World::Create(DeviceResources* deviceRes)
+{
+	for (int idx = 0; idx < WORLD_SIZE * WORLD_SIZE * WORLD_HEIGHT; idx++)
+		chunks[idx]->Generate(deviceRes);
+
+	buildingsPositions[TREE].model->Generate(deviceRes);
+	buildingsPositions[HOUSE].model->Generate(deviceRes);
+	buildingsPositions[SHOP].model->Generate(deviceRes);
+	buildingsPositions[FACTORY].model->Generate(deviceRes);
+	buildingsPositions[WATERPLANT].model->Generate(deviceRes);
+	buildingsPositions[ENERGYPLANT].model->Generate(deviceRes);
+	buildingsPositions[ROAD].model->Generate(deviceRes);
+
+	DefaultResources::Get()->cbModel.Create(deviceRes);
 }

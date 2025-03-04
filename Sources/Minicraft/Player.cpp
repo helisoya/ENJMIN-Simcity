@@ -39,14 +39,12 @@ void Player::Update(float dt, DirectX::Keyboard::State kb, DirectX::Mouse::State
 		if (blockData.flags & BF_NO_RAYCAST) continue;
 
 		highlightCube.model = Matrix::CreateTranslation(cubes[i][0], cubes[i][1], cubes[i][2]);
+
+		if ((cubes[i][1] != 1 && cubes[i][1] != 2) || world->GetBuilding(cubes[i][0],cubes[i][2] != NOTHING)) continue;
+
 		if (mouseTracker.leftButton == ButtonState::PRESSED) {
-			world->UpdateBlock(cubes[i][0], cubes[i][1], cubes[i][2], EMPTY);
-		} else if(mouseTracker.rightButton == ButtonState::PRESSED && i > 0) {
-			if (blockData.flags & BF_HALF_BLOCK && *block == currentCube.GetBlockId()) {
-				world->UpdateBlock(cubes[i][0], cubes[i][1], cubes[i][2], (BlockId)((int)currentCube.GetBlockId() + 1));
-			} else {
-				world->UpdateBlock(cubes[i - 1][0], cubes[i - 1][1], cubes[i - 1][2], currentCube.GetBlockId());
-			}
+			//world->UpdateBlock(cubes[i][0], cubes[i][1]+1, cubes[i][2], LOG);
+			world->PlaceBuilding(ROAD, cubes[i][0], cubes[i][1] + 1, cubes[i][2]);
 		}
 		break;
 	}
