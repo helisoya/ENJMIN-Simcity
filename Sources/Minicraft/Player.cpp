@@ -3,11 +3,13 @@
 #include "Engine/DefaultResources.h"
 #include "Player.h"
 #include "Utils.h"
+#include <Engine/StepTimer.h>
+#include "string"
+#include "iostream"
 
 using ButtonState = Mouse::ButtonStateTracker::ButtonState;
 
 void Player::GenerateGPUResources(DeviceResources* deviceRes) {
-	currentCube.Generate(deviceRes);
 	highlightCube.Generate(deviceRes);
 
 	camera.SetRotation(Quaternion::CreateFromYawPitchRoll(0,-45,0));
@@ -66,4 +68,28 @@ void Player::Draw(DeviceResources* deviceRes) {
 	gpuRes->cbModel.data.model = Matrix::Identity;
 	gpuRes->cbModel.UpdateBuffer(deviceRes);
 	gpuRes->defaultDepth.Apply(deviceRes);
+}
+
+void Player::Im(DX::StepTimer const& timer)
+{
+	if (ImGui::CollapsingHeader("Player")) {
+		ImGui::Text("Money : ");
+		ImGui::SameLine();
+		ImGui::Text(std::to_string(money).c_str());
+		ImGui::Spacing();
+		ImGui::Spacing();
+
+		ImVec4 color;
+		for (int i = 0; i < 7; i++) {
+			if (i == currentBuildingIdx) color = ImVec4(1, 0, 0, 1);
+			else if(prices[i] <= money) color = ImVec4(1, 1, 1, 1);
+			else color = ImVec4(0.5f, 0.5f, 0.5f, 1);
+
+			ImGui::TextColored(color, buildingsNames[i]);
+			ImGui::SameLine();
+			ImGui::TextColored(color, " - ");
+			ImGui::SameLine();
+			ImGui::TextColored(color, std::to_string(prices[i]).c_str());
+		}
+	}
 }

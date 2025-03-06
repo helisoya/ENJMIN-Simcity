@@ -16,6 +16,9 @@
 #include "Minicraft/Utils.h"
 #include "Engine/Light.h"
 #include "Minicraft/Skybox.h"
+#include "string"
+#include "iostream"
+
 
 extern void ExitGame() noexcept;
 
@@ -40,6 +43,8 @@ OrthographicCamera hudCamera(400, 600);
 Light light;
 Skybox skybox;
 
+bool showGUI = true;
+
 // Game
 Game::Game() noexcept(false) {
 	m_deviceResources = std::make_unique<DeviceResources>(DXGI_FORMAT_B8G8R8A8_UNORM_SRGB, DXGI_FORMAT_D32_FLOAT, 2);
@@ -56,7 +61,7 @@ void Game::Initialize(HWND window, int width, int height) {
 	m_keyboard = std::make_unique<Keyboard>();
 	m_mouse = std::make_unique<Mouse>();
 	m_mouse->SetWindow(window);
-	m_mouse->SetMode(Mouse::MODE_RELATIVE);
+	m_mouse->SetMode(Mouse::MODE_ABSOLUTE);
 
 	// Initialize the Direct3D resources
 	m_deviceResources->SetWindow(window, width, height);
@@ -90,6 +95,15 @@ void Game::Initialize(HWND window, int width, int height) {
 	crosshairLine.PushVertex({ {0, 7, 1, 1}, {1, 1, 1, 1} });
 
 	crosshairLine.Create(m_deviceResources.get());
+
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+
+	ImGui_ImplWin32_Init(window);
+	ImGui_ImplDX11_Init(m_deviceResources.get()->GetD3DDevice(), m_deviceResources.get()->GetD3DDeviceContext());
 }
 
 void Game::Tick() {
@@ -102,6 +116,11 @@ void Game::Tick() {
 
 // Updates the world.
 void Game::Update(DX::StepTimer const& timer) {
+
+	ImGui_ImplDX11_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+
 	auto const kb = m_keyboard->GetState();
 	auto const ms = m_mouse->GetState();
 	m_mouse->ResetScrollWheelValue();
@@ -110,6 +129,8 @@ void Game::Update(DX::StepTimer const& timer) {
 
 	if (kb.Escape)
 		ExitGame();
+
+	Im(timer);
 
 	auto const pad = m_gamePad->GetState(0);
 }
@@ -161,6 +182,12 @@ void Game::Render(DX::StepTimer const& timer) {
 	context->Draw(4, 0);
 
 	m_deviceResources->Present();
+
+	ImGui::Render();
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+	ImGui::UpdatePlatformWindows();
+	ImGui::RenderPlatformWindowsDefault();
 }
 
 
@@ -192,6 +219,28 @@ void Game::OnWindowSizeChanged(int width, int height) {
 	// We can realloc here any resources that depends on the target resolution (post processing etc)
 	player.GetCamera()->UpdateAspectRatio((float)width / (float)height);
 	hudCamera.UpdateSize((float)width, (float)height);
+}
+
+void Game::Im(DX::StepTimer const& timer)
+{
+	bool open = true;
+	ImGui::Begin("GUI", &open);
+	ImGui::SetWindowSize(ImVec2(500, 600));
+	
+	if (ImGui::CollapsingHeader("General")) {
+		ImGui::Text("FPS : ");
+		ImGui::SameLine();
+		ImGui::Text(std::to_string(timer.GetFramesPerSecond()).c_str());
+	}
+	if (ImGui::CollapsingHeader("Controls")) {
+		ImGui::Text("Left Click : Build (If you have enough money)");
+		ImGui::Text("Build your city.");
+		ImGui::Text("Money is earned with taxes"); 
+		ImGui::Text("Taxes are divided by 2 if there is not enough energy and water.");
+	}
+
+	player.Im(timer);
+	ImGui::End();
 }
 
 void Game::OnDeviceLost() {

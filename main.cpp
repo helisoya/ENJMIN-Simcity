@@ -66,6 +66,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		RECT rc = { 0, 0, static_cast<LONG>(w), static_cast<LONG>(h) };
 
 		AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
+		ShowCursor(TRUE);
 
 		HWND hwnd = CreateWindowExW(0, L"DirectXTKSimpleSampleWindowClass", g_szAppName, WS_OVERLAPPEDWINDOW,
 			CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, hInstance,
@@ -91,6 +92,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 			DispatchMessage(&msg);
 		} else {
 			g_game->Tick();
+			ShowCursor(TRUE);
 		}
 	}
 
@@ -125,9 +127,15 @@ void ToogleFullscren(HWND hWnd, Game* game) {
 	s_fullscreen = !s_fullscreen;
 }
 
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+
 // Windows procedure
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	if (ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam))
+		return true;
+
 	static bool s_in_sizemove = false;
 	static bool s_in_suspend = false;
 	static bool s_minimized = false;
@@ -277,5 +285,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 // Exit helper
 void ExitGame() noexcept
 {
+	ImGui_ImplDX11_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
 	PostQuitMessage(0);
 }

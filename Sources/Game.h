@@ -28,6 +28,7 @@ public:
 	void OnWindowMoved();
 	void OnDisplayChange();
 	void OnWindowSizeChanged(int width, int height);
+	void Im(DX::StepTimer const& timer);
 
 	// Properties
 	void GetDefaultSize(int& width, int& height) const noexcept;

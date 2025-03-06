@@ -87,7 +87,7 @@ struct VertexLayout_PositionNormalUV {
 struct VertexLayout_PositionNormalUVInstanced {
 	// Constructor for ease of use
 	VertexLayout_PositionNormalUVInstanced() = default;
-	VertexLayout_PositionNormalUVInstanced(Vector4 const& pos, Vector4 const& normal, Vector2 const& uv, UINT instanceID) noexcept : position(pos), normal(normal), uv(uv), instanceId(instanceId){ }
+	VertexLayout_PositionNormalUVInstanced(Vector4 const& pos, Vector4 const& normal, Vector2 const& uv, UINT instanceID) noexcept : position(pos), normal(normal), uv(uv) { this->instanceId = instanceID; }
 
 	// The actual data inside the struct
 	Vector4 position;

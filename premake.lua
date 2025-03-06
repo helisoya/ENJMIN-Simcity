@@ -25,19 +25,23 @@ project "SimCity"
 		"Sources/**.h",
 		"Sources/**.cpp",
 		"Resources/Shaders/**.hlsl",
-		"main.cpp"
+		"main.cpp",
+		"imgui/**.h",
+		"imgui/**.cpp",
 	}
 
 	includedirs {
 		"Sources",
 		"Deps/DirectXTK/Inc",
-		"Deps/PerlinNoise"
+		"Deps/PerlinNoise",
+		"imgui"
 	}
 
 	links {
 		"d3d11.lib",
 		"dxgi.lib",
-		"DirectXTK.lib"
+		"DirectXTK.lib",
+		
 	}
 
 	filter "files:**.hlsl or **.hlsli" 
