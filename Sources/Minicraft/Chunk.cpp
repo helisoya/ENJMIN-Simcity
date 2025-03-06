@@ -25,6 +25,14 @@ BlockId* Chunk::GetCubeLocal(int lx, int ly, int lz) {
 	return &data[lx + ly * CHUNK_SIZE + lz * CHUNK_SIZE * CHUNK_SIZE];
 }
 
+void Chunk::Reset()
+{
+	for (int i = 0; i < CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE; i++) {
+		data[i] = EMPTY;
+	}
+	needRegen = true;
+}
+
 void Chunk::PushCube(int x, int y, int z) {
 	auto blockId = GetCubeLocal(x, y, z);
 

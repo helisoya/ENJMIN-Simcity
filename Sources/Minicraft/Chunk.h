@@ -31,6 +31,7 @@ public:
 	void Draw(DeviceResources* deviceRes, ShaderPass pass);
 
 	BlockId* GetCubeLocal(int lx, int ly, int lz);
+	void Reset();
 private:
 	void PushCube(int x, int y, int z);
 	void PushFace(Vector3 pos, Vector3 up, Vector3 right, Vector3 normal, int id, ShaderPass pass, float scaleY = 1.0f);

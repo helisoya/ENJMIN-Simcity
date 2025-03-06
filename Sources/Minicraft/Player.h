@@ -12,7 +12,6 @@ class Player {
 	World* world = nullptr;
 
 	Vector3 position = Vector3();
-	float velocityY = 0;
 
 	float walkSpeed = 10.0f;
 
@@ -35,6 +34,7 @@ public:
 	void GenerateGPUResources(DeviceResources* deviceRes);
 	void Update(float dt, DirectX::Keyboard::State kb, DirectX::Mouse::State ms);
 	void Draw(DeviceResources* deviceRes);
+	void Reset();
 	void Im(DX::StepTimer const& timer);
 
 	PerspectiveCamera* GetCamera() { return &camera; }

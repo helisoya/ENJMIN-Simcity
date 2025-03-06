@@ -25,12 +25,15 @@ void Player::Update(float dt, DirectX::Keyboard::State kb, DirectX::Mouse::State
 		money += world->GetPassiveIncome();
 	}
 
+	float speed = walkSpeed;
+	if (kb.LeftShift) speed *= 2;
+
 	Vector3 delta;
 	if (kb.Z) delta += Vector3::Forward;
 	if (kb.S) delta += Vector3::Backward;
 	if (kb.Q) delta += Vector3::Left;
 	if (kb.D) delta += Vector3::Right;
-	position += delta * walkSpeed * dt;
+	position += delta * speed * dt;
 
 	float scrollValue = -((float)ms.scrollWheelValue * 0.25f);
 	position += Vector3::Up * scrollValue * walkSpeed * dt;
@@ -47,7 +50,7 @@ void Player::Update(float dt, DirectX::Keyboard::State kb, DirectX::Mouse::State
 	else if (kb.D6) currentBuildingIdx = 5;
 	else if (kb.D7) currentBuildingIdx = 6;
 
-	auto cubes = Raycast(camera.GetPosition(), camera.Forward(), 120);
+	auto cubes = Raycast(camera.GetPosition(), camera.Forward(), 100);
 	for (int i = 0; i < cubes.size(); i++) {
 		BlockId* block = world->GetCube(cubes[i][0], cubes[i][1], cubes[i][2]);
 		if (block == nullptr || cubes[i][1] >= 16 || cubes[i][1] < 0) continue;
@@ -63,6 +66,7 @@ void Player::Update(float dt, DirectX::Keyboard::State kb, DirectX::Mouse::State
 
 			if (possibleBuildings[currentBuildingIdx] == WATERPLANT && !world->IsAdjacentToWater(cubes[i][0], cubes[i][1], cubes[i][2])) continue;
 			if (possibleBuildings[currentBuildingIdx] == NOTHING && world->GetBuilding(cubes[i][0], cubes[i][2]) == NOTHING) continue;
+			Building other = world->GetBuilding(cubes[i][0], cubes[i][2]);
 			if (possibleBuildings[currentBuildingIdx] != NOTHING && world->GetBuilding(cubes[i][0], cubes[i][2]) != NOTHING) continue;
 
 			if (possibleBuildings[currentBuildingIdx] != NOTHING) {
@@ -95,6 +99,12 @@ void Player::Draw(DeviceResources* deviceRes) {
 	gpuRes->cbModel.data.model = Matrix::Identity;
 	gpuRes->cbModel.UpdateBuffer(deviceRes);
 	gpuRes->defaultDepth.Apply(deviceRes);
+}
+
+void Player::Reset()
+{
+	money = 100;
+	passiveIncomeCooldown = 10;
 }
 
 void Player::Im(DX::StepTimer const& timer)

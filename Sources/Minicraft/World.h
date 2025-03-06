@@ -47,9 +47,10 @@ class World {
 public:
 	World();
 	virtual ~World();
-	void Generate(DeviceResources* deviceRes);
+	void Generate(DeviceResources* deviceRes, int seed);
 	void GenerateFromFile(DeviceResources* deviceRes, std::wstring filePath);
 	void Draw(Camera* camera, DeviceResources* deviceRes);
+	void Reset();
 
 	Chunk* GetChunk(int cx, int cy, int cz);
 	Chunk* GetChunkFromCoordinates(int gx, int gy, int gz);

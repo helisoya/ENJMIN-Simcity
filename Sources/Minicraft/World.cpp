@@ -84,10 +84,16 @@ World::~World() {
 	}
 }
 
-void World::Generate(DeviceResources* deviceRes) {
-	siv::BasicPerlinNoise<float> perlin(786768768876);
+void World::Generate(DeviceResources* deviceRes,int seed) {
+
+	Reset();
+
+	siv::BasicPerlinNoise<float> perlin(seed);
 	float noiseValue;
 	int yMax;
+
+	float treePercentage = 0.3f;
+	float treeNoiseValue;
 
 	float scale = WORLD_SIZE * CHUNK_SIZE / 2.5;
 
@@ -96,11 +102,16 @@ void World::Generate(DeviceResources* deviceRes) {
 		for (int z = 0; z < CHUNK_SIZE * WORLD_SIZE; z++) {
 
 			noiseValue = (perlin.noise2D(x / scale, z / scale) + 1) / 2;
-			yMax = (int)(noiseValue * 5);
+			treeNoiseValue = (perlin.noise2D(x / scale * 2, z / scale * 2) + 1) / 2;
+			yMax = (int)(noiseValue * 6);
 
-			if (yMax == 1) {
+			if (yMax <= 1 ) {
 				auto block = GetCube(x, 1, z);
 				*block = WATER;
+
+				block = GetCube(x, 0, z);
+				*block = SAND;
+				continue;
 			}
 
 			for (int y = 0; y < yMax && y < 7; y++) {
@@ -112,7 +123,10 @@ void World::Generate(DeviceResources* deviceRes) {
 				else {
 					*block = y < 3 ? GRASS : STONE;
 				}
+			}
 
+			if (treeNoiseValue <= treePercentage && yMax <= 3) {
+				PlaceBuilding(TREE, x,yMax, z);
 			}
 		}
 	}
@@ -122,6 +136,17 @@ void World::Generate(DeviceResources* deviceRes) {
 
 void World::GenerateFromFile(DeviceResources* deviceRes, std::wstring filePath)
 {
+	Reset();
+
+	int treeSeed = 0;
+	for (int i = 0; i < filePath.size(); i++) {
+		treeSeed += filePath.c_str()[i];
+	}
+
+	siv::BasicPerlinNoise<float> perlin(treeSeed);
+	float treePercentage = 0.3f;
+	float treeNoiseValue;
+	float scale = WORLD_SIZE * CHUNK_SIZE / 2.5;
 
 
 	std::fstream fin;
@@ -148,6 +173,8 @@ void World::GenerateFromFile(DeviceResources* deviceRes, std::wstring filePath)
 		{
 			value = atoi(word.c_str());
 
+			treeNoiseValue = (perlin.noise2D(x / scale * 2, y / scale * 2) + 1) / 2;
+
 			auto block = GetCube(x, 0, y);
 			*block = SAND;
 
@@ -171,6 +198,9 @@ void World::GenerateFromFile(DeviceResources* deviceRes, std::wstring filePath)
 			if (yMax == 0) {
 				auto block = GetCube(x, 1, y);
 				*block = WATER;
+			}
+			else if(treeNoiseValue <= treePercentage && yMax <= 2) {
+				PlaceBuilding(TREE, x, yMax+1, y);
 			}
 
 			x++;
@@ -227,6 +257,34 @@ void World::Draw(Camera* camera, DeviceResources* deviceRes) {
 
 	gpuRes->cbModel.data.model = Matrix::Identity;
 	gpuRes->cbModel.UpdateBuffer(deviceRes);
+}
+
+void World::Reset()
+{
+	passiveIncome = 1;
+	energyGain = 0;
+	waterGain = 0;
+
+	// Reset buildings placements
+	for (int x = 0; x < WORLD_SIZE * CHUNK_SIZE * WORLD_SIZE * CHUNK_SIZE; x++) {
+		buildings[x] = NOTHING;
+	}
+
+	// ! Reset buildings positions !
+	
+	for (const auto& [key, value] : buildingsPositions) {
+		value.positions->clear();
+	}
+
+
+	for (int x = 0; x < WORLD_SIZE; x++) {
+		for (int y = 0; y < WORLD_HEIGHT; y++) {
+			for (int z = 0; z < WORLD_SIZE; z++) {
+				chunks[x + y * WORLD_SIZE + z * WORLD_SIZE * WORLD_HEIGHT]->Reset();
+			}
+		}
+	}
+	
 }
 
 Chunk* World::GetChunk(int cx, int cy, int cz) {

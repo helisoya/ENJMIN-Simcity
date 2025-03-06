@@ -36,6 +36,24 @@ void Cube3D::Generate(DeviceResources* deviceRes) {
 		// Hard Code Roads for now
 		PushFace({ -0.5f, -0.48f, -0.5f }, Vector3::Backward, Vector3::Right, Vector3::Down, data.texIdBottom,false);
 	}
+	else if (blockId == LOG) {
+		// Hard Code Tree for now too
+
+		PushFace({ -0.1f, -0.5f,  0.1f }, Vector3::Up * 0.2f, Vector3::Right * 0.2f, Vector3::Backward, data.texIdSide);
+		PushFace({ 0.1f, -0.5f,  0.1f }, Vector3::Up * 0.2f, Vector3::Forward * 0.2f, Vector3::Right, data.texIdSide);
+		PushFace({ 0.1f, -0.5f, -0.1f }, Vector3::Up * 0.2f, Vector3::Left * 0.2f, Vector3::Forward, data.texIdSide);
+		PushFace({ -0.1f, -0.5f, -0.1f }, Vector3::Up * 0.2f, Vector3::Backward * 0.2f, Vector3::Left, data.texIdSide);
+		PushFace({ -0.1f, -0.5f, -0.1f }, Vector3::Backward * 0.2f, Vector3::Right * 0.2f, Vector3::Down, data.texIdBottom);
+
+		auto& data = BlockData::Get(GREENWOOL);
+
+		PushFace({ -0.25f, -0.3f,  0.25f }, Vector3::Up * 0.5f, Vector3::Right * 0.5f, Vector3::Backward, data.texIdSide);
+		PushFace({ 0.25f, -0.3f,  0.25f }, Vector3::Up * 0.5f, Vector3::Forward * 0.5f, Vector3::Right, data.texIdSide);
+		PushFace({ 0.25f, -0.3f, -0.25f }, Vector3::Up * 0.5f, Vector3::Left * 0.5f, Vector3::Forward, data.texIdSide);
+		PushFace({ -0.25f, -0.3f, -0.25f }, Vector3::Up * 0.5f, Vector3::Backward * 0.5f, Vector3::Left, data.texIdSide);
+		PushFace({ -0.25f,  0.2f,  0.25f }, Vector3::Forward * 0.5f, Vector3::Right * 0.5f, Vector3::Up, data.texIdTop);
+		PushFace({ -0.25f, -0.3f, -0.25f }, Vector3::Backward * 0.5f, Vector3::Right * 0.5f, Vector3::Down, data.texIdBottom);
+	}
 	else {
 		PushFace({ -0.5f, -0.5f,  0.5f }, Vector3::Up, Vector3::Right, Vector3::Backward, data.texIdSide);
 		PushFace({ 0.5f, -0.5f,  0.5f }, Vector3::Up, Vector3::Forward, Vector3::Right, data.texIdSide);

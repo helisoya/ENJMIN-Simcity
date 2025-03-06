@@ -44,6 +44,7 @@ Light light;
 Skybox skybox;
 
 bool showGUI = true;
+int seed = 786768768876;
 
 // Game
 Game::Game() noexcept(false) {
@@ -85,7 +86,7 @@ void Game::Initialize(HWND window, int width, int height) {
 
 	light.Generate(m_deviceResources.get());
 
-	//world.Generate(m_deviceResources.get());
+	//world.Generate(m_deviceResources.get(),786768768876);
 	world.GenerateFromFile(m_deviceResources.get(), L"TestMap");
 	skybox.Generate(m_deviceResources.get());
 
@@ -231,6 +232,31 @@ void Game::Im(DX::StepTimer const& timer)
 		ImGui::Text("FPS : ");
 		ImGui::SameLine();
 		ImGui::Text(std::to_string(timer.GetFramesPerSecond()).c_str());
+
+		ImGui::Text("Seed : ");
+		ImGui::SameLine();
+
+		ImGui::InputInt(" ",&seed);
+		if (ImGui::Button("Generate from seed")) {
+			world.Generate(m_deviceResources.get(),seed);
+			player.Reset();
+		}
+
+		ImGui::Spacing();
+		ImGui::Spacing();
+
+		ImGui::Text("Filename : ");
+		ImGui::SameLine();
+		char* filename = "TestMap";
+		ImGui::InputText("  ", filename,20);
+		if (ImGui::Button("Generate from file")) {
+			const size_t cSize = strlen(filename) + 1;
+			wchar_t* wc = new wchar_t[cSize];
+			mbstowcs(wc, filename, cSize);
+
+			world.GenerateFromFile(m_deviceResources.get(), wc);
+			player.Reset();
+		}
 	}
 	if (ImGui::CollapsingHeader("Controls")) {
 		ImGui::Text("Left Click : Build (If you have enough money)");
