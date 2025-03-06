@@ -37,36 +37,43 @@ World::World() {
 	BuildingData data = {};
 	data.model = new Cube3D(LOG);
 	data.positions = new std::vector<Vector3>();
+	data.energy = 0; data.water = 0; data.income = 0;
 	buildingsPositions[TREE] = data;
 
 	data = {};
 	data.model = new Cube3D(WOOD);
 	data.positions = new std::vector<Vector3>();
+	data.energy = -1; data.water = -1; data.income = 2;
 	buildingsPositions[HOUSE] = data;
 
 	data = {};
 	data.model = new Cube3D(SLAB);
 	data.positions = new std::vector<Vector3>();
+	data.energy = -2; data.water = -1; data.income = 4;
 	buildingsPositions[SHOP] = data;
 
 	data = {};
 	data.model = new Cube3D(BRICK);
 	data.positions = new std::vector<Vector3>();
+	data.energy = -5; data.water = -2; data.income = 8;
 	buildingsPositions[FACTORY] = data;
 
 	data = {};
 	data.model = new Cube3D(DIAMOND_BLOCK);
 	data.positions = new std::vector<Vector3>();
+	data.energy = -2; data.water = 10; data.income = 0;
 	buildingsPositions[WATERPLANT] = data;
 
 	data = {};
 	data.model = new Cube3D(GOLD_BLOCK);
 	data.positions = new std::vector<Vector3>();
+	data.energy = 5; data.water = 0; data.income = 0;
 	buildingsPositions[ENERGYPLANT] = data;
 
 	data = {};
 	data.model = new Cube3D(OBSIDIAN);
 	data.positions = new std::vector<Vector3>();
+	data.energy = 0; data.water = 0; data.income = 0;
 	buildingsPositions[ROAD] = data;
 }
 
@@ -246,6 +253,12 @@ void World::MakeChunkDirty(int gx, int gy, int gz) {
 	if (chunk) chunk->needRegen = true;
 }
 
+bool World::IsAdjacentToWater(int gx, int gy, int gz)
+{
+	return *GetCube(gx + 1, gy, gz) == WATER || *GetCube(gx - 1, gy, gz) == WATER ||
+		*GetCube(gx, gy, gz + 1) == WATER || *GetCube(gx, gy, gz - 1) == WATER;
+}
+
 Chunk* World::GetChunkFromCoordinates(int gx, int gy, int gz) {
 	int cx = gx / CHUNK_SIZE;
 	int cy = gy / CHUNK_SIZE;
@@ -275,8 +288,94 @@ Building World::GetBuilding(int x, int y)
 
 void World::PlaceBuilding(Building type, int x, int y, int z)
 {
+
 	buildings[x + z * CHUNK_SIZE * WORLD_SIZE] = type;
 	buildingsPositions[type].positions->push_back(Vector3(x,y,z));
+	
+	energyGain += buildingsPositions[type].energy;
+	waterGain += buildingsPositions[type].water;
+
+	Building typeAdjacent;
+	if (type == ROAD) {
+		for (int i = -1; i < 2; i++) {
+			for (int j = -1; j < 2; j++) {
+				if ((j == 0 || i == 0) && i != j) {
+					typeAdjacent = GetBuilding(x + i, z + j);
+					if (typeAdjacent != NOTHING && GetAmountOfAdjacentRoads(x + i, z + j) == 1) passiveIncome += buildingsPositions[typeAdjacent].income;
+				}
+			}
+		}
+	}
+	else {
+		if (GetAmountOfAdjacentRoads(x, z) > 0) passiveIncome += buildingsPositions[type].income;
+	}
+}
+
+void World::RemoveBuilding(int x, int y, int z)
+{
+
+	Building type = GetBuilding(x, z);
+
+	int size = buildingsPositions[type].positions->size();
+	Vector3 position;
+	for (int i = 0; i < size; i++) {
+		position = buildingsPositions[type].positions->at(i);
+		if ((int)position.x == x && (int)position.y == y && (int)position.z == z) {
+			buildingsPositions[type].positions->erase(buildingsPositions[type].positions->begin() + i);
+
+			buildings[x + z * CHUNK_SIZE * WORLD_SIZE] = NOTHING;
+			energyGain -= buildingsPositions[type].energy;
+			waterGain -= buildingsPositions[type].water;
+
+			Building typeAdjacent;
+			if (type == ROAD) {
+				for (int i = -1; i < 2; i++) {
+					for (int j = -1; j < 2; j++) {
+						if ((j == 0 || i == 0) && i != j) {
+							typeAdjacent = GetBuilding(x + i, z + j);
+							if (typeAdjacent != NOTHING && GetAmountOfAdjacentRoads(x + i, z + j) == 0) passiveIncome -= buildingsPositions[typeAdjacent].income;
+						}
+					}
+				}
+			}
+			else {
+				if (GetAmountOfAdjacentRoads(x, z) > 0) passiveIncome -= buildingsPositions[type].income;
+			}
+
+			return;
+		}
+	}
+}
+
+int World::GetWaterDelta()
+{
+	return waterGain;
+}
+
+int World::GetEnergyDelta()
+{
+	return energyGain;
+}
+
+int World::GetPassiveIncome()
+{
+	int result = passiveIncome;
+	if (energyGain < 0) result = result / 2.0f;
+	if (waterGain < 0) result = result / 2.0f;
+	return result;
+}
+
+int World::GetAmountOfAdjacentRoads(int x, int y)
+{
+	int total = 0;
+	int mapSize = CHUNK_SIZE * WORLD_SIZE;
+	
+	if (x > 0 && buildings[(x - 1) + y * mapSize] == ROAD) total++;
+	if (y > 0 && buildings[x + (y-1) * mapSize] == ROAD) total++;
+	if (x < mapSize-1 && buildings[(x + 1) + y * mapSize] == ROAD) total++;
+	if (y < mapSize-1 && buildings[x + (y + 1) * mapSize] == ROAD) total++;
+
+	return total;
 }
 
 void World::Create(DeviceResources* deviceRes)

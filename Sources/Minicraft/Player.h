@@ -25,6 +25,8 @@ class Player {
 	int currentBuildingIdx = 0;
 	int money = 100;
 
+	float passiveIncomeCooldown = 10;
+
 	DirectX::Mouse::ButtonStateTracker      mouseTracker;
 	DirectX::Keyboard::KeyboardStateTracker keyboardTracker;
 public:

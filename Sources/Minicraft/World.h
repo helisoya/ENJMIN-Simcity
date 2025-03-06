@@ -30,12 +30,19 @@ enum Building {
 struct BuildingData {
 	Cube3D* model;
 	std::vector<Vector3>* positions;
+	int energy;
+	int water;
+	int income;
 };
 
 class World {
 	Chunk* chunks[WORLD_SIZE * WORLD_HEIGHT * WORLD_SIZE];
 	Building buildings[WORLD_SIZE * 16 * WORLD_SIZE * 16];
 	std::map<Building, BuildingData> buildingsPositions;
+
+	int energyGain = 0;
+	int waterGain = 0;
+	int passiveIncome = 1;
 
 public:
 	World();
@@ -48,11 +55,18 @@ public:
 	Chunk* GetChunkFromCoordinates(int gx, int gy, int gz);
 	BlockId* GetCube(int gx, int gy, int gz);
 	void MakeChunkDirty(int gx, int gy, int gz);
+	bool IsAdjacentToWater(int gx, int gy, int gz);
 
 	void UpdateBlock(int gx, int gy, int gz, BlockId block);
 
 	Building GetBuilding(int x,int y);
 	void PlaceBuilding(Building type, int x, int y, int z);
+	void RemoveBuilding(int x, int y, int z);
+	int GetWaterDelta();
+	int GetEnergyDelta();
+	int GetPassiveIncome();
+
+	int GetAmountOfAdjacentRoads(int x,int y);
 
 	friend class Chunk;
 

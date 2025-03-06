@@ -85,8 +85,8 @@ void Game::Initialize(HWND window, int width, int height) {
 
 	light.Generate(m_deviceResources.get());
 
-	world.Generate(m_deviceResources.get());
-	//world.GenerateFromFile(m_deviceResources.get(), L"TestMap");
+	//world.Generate(m_deviceResources.get());
+	world.GenerateFromFile(m_deviceResources.get(), L"TestMap");
 	skybox.Generate(m_deviceResources.get());
 
 	crosshairLine.PushVertex({ {-7, 0, 1, 1}, {1, 1, 1, 1} });
@@ -237,6 +237,8 @@ void Game::Im(DX::StepTimer const& timer)
 		ImGui::Text("Build your city.");
 		ImGui::Text("Money is earned with taxes"); 
 		ImGui::Text("Taxes are divided by 2 if there is not enough energy and water.");
+		ImGui::Text("Buildings give taxes only when near a road.");
+		ImGui::Text("Water plant must be built near a water source.");
 	}
 
 	player.Im(timer);

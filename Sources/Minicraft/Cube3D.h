@@ -24,5 +24,5 @@ public:
 	void Draw(DeviceResources* deviceRes);
 
 private:
-	void PushFace(Vector3 pos, Vector3 up, Vector3 right, Vector3 normal, int id);
+	void PushFace(Vector3 pos, Vector3 up, Vector3 right, Vector3 normal, int id, bool front = true);
 };
