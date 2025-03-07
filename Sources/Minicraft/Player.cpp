@@ -59,7 +59,7 @@ void Player::Update(float dt, DirectX::Keyboard::State kb, DirectX::Mouse::State
 
 		highlightCube.model = Matrix::CreateTranslation(cubes[i][0], cubes[i][1], cubes[i][2]);
 
-		if ((cubes[i][1] != 1 && cubes[i][1] != 2) || world->GetBuilding(cubes[i][0],cubes[i][2] != NOTHING)) continue;
+		if ((cubes[i][1] != 1 && cubes[i][1] != 2)) continue;
 
 		if (mouseTracker.leftButton == ButtonState::PRESSED && money >= prices[currentBuildingIdx]) {
 			//world->UpdateBlock(cubes[i][0], cubes[i][1]+1, cubes[i][2], LOG);
