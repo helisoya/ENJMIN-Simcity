@@ -47,8 +47,8 @@ class World {
 public:
 	World();
 	virtual ~World();
-	void Generate(DeviceResources* deviceRes, int seed);
-	void GenerateFromFile(DeviceResources* deviceRes, std::wstring filePath);
+	void Generate(DeviceResources* deviceRes, int seed, float treeThreshold);
+	void GenerateFromFile(DeviceResources* deviceRes, std::wstring filePath, float treeThreshold);
 	void Draw(Camera* camera, DeviceResources* deviceRes);
 	void Reset();
 

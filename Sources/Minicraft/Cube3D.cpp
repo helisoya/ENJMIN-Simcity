@@ -24,6 +24,25 @@ void Cube3D::PushFace(Vector3 pos, Vector3 up, Vector3 right, Vector3 normal, in
 
 }
 
+void Cube3D::PushTriangle(Vector3 a, Vector3 b, Vector3 c, Vector3 normal, int id, bool front)
+{
+	Vector2 uv(
+		(id % 16) * BLOCK_TEXSIZE,
+		(id / 16) * BLOCK_TEXSIZE
+	);
+
+	auto aIdx = vb.PushVertex({ ToVec4(a), ToVec4Normal(normal), uv});
+	auto bIdx = vb.PushVertex({ ToVec4(b), ToVec4Normal(normal), uv + Vector2::UnitX * BLOCK_TEXSIZE * 0.5f + Vector2::UnitY * BLOCK_TEXSIZE });
+	auto cIdx = vb.PushVertex({ ToVec4(c), ToVec4Normal(normal), uv + Vector2::UnitX * BLOCK_TEXSIZE });
+
+	if (front) {
+		ib.PushTriangle(aIdx, bIdx, cIdx);
+	}
+	else {
+		ib.PushTriangle(aIdx, cIdx, bIdx);
+	}
+}
+
 void Cube3D::Generate(DeviceResources* deviceRes) {
 	vb.Clear();
 	ib.Clear();
@@ -32,12 +51,25 @@ void Cube3D::Generate(DeviceResources* deviceRes) {
 	float uvxSide = (data.texIdSide % 16) / BLOCK_TEXSIZE;
 	float uvySide = (data.texIdSide / 16) / BLOCK_TEXSIZE;
 
-	if (blockId == OBSIDIAN) {
+	if (blockId == BLACKWOOL) {
 		// Hard Code Roads for now
 		PushFace({ -0.5f, -0.48f, -0.5f }, Vector3::Backward, Vector3::Right, Vector3::Down, data.texIdBottom,false);
 	}
+	else if (blockId == WOOD) {
+		PushFace({ -0.3f, -0.5f,  0.3f }, Vector3::Up * 0.6f, Vector3::Right * 0.6f, Vector3::Backward, data.texIdSide);
+		PushFace({ 0.3f, -0.5f,  0.3f }, Vector3::Up * 0.6f, Vector3::Forward * 0.6f, Vector3::Right, data.texIdSide);
+		PushFace({ 0.3f, -0.5f, -0.3f }, Vector3::Up * 0.6f, Vector3::Left * 0.6f, Vector3::Forward, data.texIdSide);
+		PushFace({ -0.3f, -0.5f, -0.3f }, Vector3::Up * 0.6f, Vector3::Backward * 0.6f, Vector3::Left, data.texIdSide);
+		PushFace({ -0.3f, -0.5f, -0.3f }, Vector3::Backward * 0.6f, Vector3::Right * 0.6f, Vector3::Down, data.texIdBottom);
+
+		PushTriangle({ 0.3f, 0.1f, -0.3f }, { 0.0f, 0.5f, -0.3f }, { -0.3f, 0.1f, -0.3f }, Vector3::Forward, data.texIdSide);
+		PushTriangle({ 0.3f, 0.1f, 0.3f }, { -0.3f, 0.1f, 0.3f }, { 0.0f, 0.5f, 0.3f } , Vector3::Backward, data.texIdSide);
+		PushFace({ -0.3f,  0.1f,  0.3f }, Vector3::Forward * 0.6f, Vector3::Right * 0.3f + Vector3::Up * 0.4f, Vector3::Up + Vector3::Left, data.texIdTop);
+		PushFace({ 0.3f,  0.1f,  0.3f }, Vector3::Left * 0.3f + Vector3::Up * 0.4f, Vector3::Forward * 0.6f, Vector3::Up + Vector3::Right, data.texIdTop);
+
+	}
 	else if (blockId == LOG) {
-		// Hard Code Tree for now too
+		// Hard Code Tree for now
 
 		PushFace({ -0.1f, -0.5f,  0.1f }, Vector3::Up * 0.2f, Vector3::Right * 0.2f, Vector3::Backward, data.texIdSide);
 		PushFace({ 0.1f, -0.5f,  0.1f }, Vector3::Up * 0.2f, Vector3::Forward * 0.2f, Vector3::Right, data.texIdSide);
@@ -52,7 +84,6 @@ void Cube3D::Generate(DeviceResources* deviceRes) {
 		PushFace({ 0.25f, -0.3f, -0.25f }, Vector3::Up * 0.5f, Vector3::Left * 0.5f, Vector3::Forward, data.texIdSide);
 		PushFace({ -0.25f, -0.3f, -0.25f }, Vector3::Up * 0.5f, Vector3::Backward * 0.5f, Vector3::Left, data.texIdSide);
 		PushFace({ -0.25f,  0.2f,  0.25f }, Vector3::Forward * 0.5f, Vector3::Right * 0.5f, Vector3::Up, data.texIdTop);
-		PushFace({ -0.25f, -0.3f, -0.25f }, Vector3::Backward * 0.5f, Vector3::Right * 0.5f, Vector3::Down, data.texIdBottom);
 	}
 	else {
 		PushFace({ -0.5f, -0.5f,  0.5f }, Vector3::Up, Vector3::Right, Vector3::Backward, data.texIdSide);

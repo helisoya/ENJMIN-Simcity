@@ -45,6 +45,7 @@ Skybox skybox;
 
 bool showGUI = true;
 int seed = 786768768876;
+float treeThreshold = 0.3f;
 
 // Game
 Game::Game() noexcept(false) {
@@ -86,8 +87,8 @@ void Game::Initialize(HWND window, int width, int height) {
 
 	light.Generate(m_deviceResources.get());
 
-	//world.Generate(m_deviceResources.get(),786768768876);
-	world.GenerateFromFile(m_deviceResources.get(), L"TestMap");
+	//world.Generate(m_deviceResources.get(),786768768876,treeThreshold);
+	world.GenerateFromFile(m_deviceResources.get(), L"TestMap", treeThreshold);
 	skybox.Generate(m_deviceResources.get());
 
 	crosshairLine.PushVertex({ {-7, 0, 1, 1}, {1, 1, 1, 1} });
@@ -233,12 +234,17 @@ void Game::Im(DX::StepTimer const& timer)
 		ImGui::SameLine();
 		ImGui::Text(std::to_string(timer.GetFramesPerSecond()).c_str());
 
+		ImGui::Text("Tree threshold : ");
+		ImGui::SameLine();
+
+		ImGui::InputFloat("   ", &treeThreshold);
+
 		ImGui::Text("Seed : ");
 		ImGui::SameLine();
 
 		ImGui::InputInt(" ",&seed);
 		if (ImGui::Button("Generate from seed")) {
-			world.Generate(m_deviceResources.get(),seed);
+			world.Generate(m_deviceResources.get(),seed, treeThreshold);
 			player.Reset();
 		}
 
@@ -254,7 +260,7 @@ void Game::Im(DX::StepTimer const& timer)
 			wchar_t* wc = new wchar_t[cSize];
 			mbstowcs(wc, filename, cSize);
 
-			world.GenerateFromFile(m_deviceResources.get(), wc);
+			world.GenerateFromFile(m_deviceResources.get(), wc, treeThreshold);
 			player.Reset();
 		}
 	}

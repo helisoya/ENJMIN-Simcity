@@ -25,4 +25,5 @@ public:
 
 private:
 	void PushFace(Vector3 pos, Vector3 up, Vector3 right, Vector3 normal, int id, bool front = true);
+	void PushTriangle(Vector3 a, Vector3 b, Vector3 c, Vector3 normal, int id, bool front = true);
 };

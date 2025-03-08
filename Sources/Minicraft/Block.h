@@ -40,6 +40,7 @@ enum BlockFlags : uint64_t {
 	F( SPONGE,				48 ) \
 	F( WOOL,				64 ) \
 	F( GREENWOOL,				146 ) \
+	F( BLACKWOOL,				113 ) \
 /* ORE */ \
 	F( COAL,				34 ) \
 	F( IRON_ORE,			33 ) \

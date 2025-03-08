@@ -71,7 +71,7 @@ World::World() {
 	buildingsPositions[ENERGYPLANT] = data;
 
 	data = {};
-	data.model = new Cube3D(OBSIDIAN);
+	data.model = new Cube3D(BLACKWOOL);
 	data.positions = new std::vector<Vector3>();
 	data.energy = 0; data.water = 0; data.income = 0;
 	buildingsPositions[ROAD] = data;
@@ -84,7 +84,7 @@ World::~World() {
 	}
 }
 
-void World::Generate(DeviceResources* deviceRes,int seed) {
+void World::Generate(DeviceResources* deviceRes,int seed, float treeThreshold) {
 
 	Reset();
 
@@ -92,7 +92,6 @@ void World::Generate(DeviceResources* deviceRes,int seed) {
 	float noiseValue;
 	int yMax;
 
-	float treePercentage = 0.3f;
 	float treeNoiseValue;
 
 	float scale = WORLD_SIZE * CHUNK_SIZE / 2.5;
@@ -125,7 +124,7 @@ void World::Generate(DeviceResources* deviceRes,int seed) {
 				}
 			}
 
-			if (treeNoiseValue <= treePercentage && yMax <= 3) {
+			if (treeNoiseValue <= treeThreshold && yMax <= 3) {
 				PlaceBuilding(TREE, x,yMax, z);
 			}
 		}
@@ -134,7 +133,7 @@ void World::Generate(DeviceResources* deviceRes,int seed) {
 	Create(deviceRes);
 }
 
-void World::GenerateFromFile(DeviceResources* deviceRes, std::wstring filePath)
+void World::GenerateFromFile(DeviceResources* deviceRes, std::wstring filePath, float treeThreshold)
 {
 	Reset();
 
@@ -144,7 +143,6 @@ void World::GenerateFromFile(DeviceResources* deviceRes, std::wstring filePath)
 	}
 
 	siv::BasicPerlinNoise<float> perlin(treeSeed);
-	float treePercentage = 0.3f;
 	float treeNoiseValue;
 	float scale = WORLD_SIZE * CHUNK_SIZE / 2.5;
 
@@ -199,7 +197,7 @@ void World::GenerateFromFile(DeviceResources* deviceRes, std::wstring filePath)
 				auto block = GetCube(x, 1, y);
 				*block = WATER;
 			}
-			else if(treeNoiseValue <= treePercentage && yMax <= 2) {
+			else if(treeNoiseValue <= treeThreshold && yMax <= 2) {
 				PlaceBuilding(TREE, x, yMax+1, y);
 			}
 
