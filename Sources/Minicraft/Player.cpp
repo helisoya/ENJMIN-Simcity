@@ -37,7 +37,7 @@ void Player::Update(float dt, DirectX::Keyboard::State kb, DirectX::Mouse::State
 
 	float scrollValue = -((float)ms.scrollWheelValue * 0.25f);
 	position += Vector3::Up * scrollValue * walkSpeed * dt;
-	position.y = std::clamp(position.y, 8.0f, 50.0f);
+	position.y = std::clamp(position.y, 2.0f, 50.0f);
 
 	camera.SetPosition(position + Vector3(0, 1.25f, 0));
 	highlightCube.model = Matrix::Identity;
