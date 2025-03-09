@@ -20,6 +20,10 @@ public:
 
 	struct ModelData {
 		Matrix model;
+		bool isInstance;
+		int temp;
+		int temp2;
+		int temp3;
 	};
 	ConstantBuffer<ModelData> cbModel;
 

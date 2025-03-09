@@ -85,6 +85,8 @@ World::~World() {
 }
 
 void World::Generate(DeviceResources* deviceRes,int seed, float treeThreshold) {
+	
+	this->deviceRes = deviceRes;
 
 	Reset();
 
@@ -135,6 +137,8 @@ void World::Generate(DeviceResources* deviceRes,int seed, float treeThreshold) {
 
 void World::GenerateFromFile(DeviceResources* deviceRes, std::wstring filePath, float treeThreshold)
 {
+	this->deviceRes = deviceRes;
+
 	Reset();
 
 	int treeSeed = 0;
@@ -231,30 +235,49 @@ void World::Draw(Camera* camera, DeviceResources* deviceRes) {
 
 			if (chunks[idx]->bounds.Intersects(camera->bounds)) {
 				gpuRes->cbModel.data.model = chunks[idx]->model.Transpose();
+				gpuRes->cbModel.data.isInstance = false;
 				gpuRes->cbModel.UpdateBuffer(deviceRes);
 				chunks[idx]->Draw(deviceRes, (ShaderPass)pass);
 			}
 		}
 	}
 
-	// Render buildings
-	gpuRes->opaque.Apply(deviceRes);
-	gpuRes->defaultDepth.Apply(deviceRes);
-	Building keys[] = { TREE,ROAD,HOUSE,SHOP,FACTORY,ENERGYPLANT,WATERPLANT};
-	for (Building key : keys) {
-		for (Vector3 position : *(buildingsPositions[key].positions)) {
-			gpuRes->cbModel.data.model = Matrix::CreateTranslation(position).Transpose();
-			gpuRes->cbModel.UpdateBuffer(deviceRes);
-			buildingsPositions[key].model->Draw(deviceRes);
-		}
 
-	}
 
 
 	// Clean
 
 	gpuRes->cbModel.data.model = Matrix::Identity;
 	gpuRes->cbModel.UpdateBuffer(deviceRes);
+}
+
+void World::DrawBuildings(Camera* camera, DeviceResources* deviceRes)
+{
+	auto gpuRes = DefaultResources::Get();
+	gpuRes->cbModel.ApplyToVS(deviceRes, 0);
+
+	// Render buildings
+	gpuRes->opaque.Apply(deviceRes);
+	gpuRes->defaultDepth.Apply(deviceRes);
+	Building keys[] = { TREE,ROAD,HOUSE,SHOP,FACTORY,ENERGYPLANT,WATERPLANT };
+	for (Building key : keys) {
+
+		if (buildingsPositions[key].positions->size() == 0) continue;
+
+		//Set the models index buffer (same as before)
+		gpuRes->cbModel.data.model = Matrix::Identity.Transpose();
+		gpuRes->cbModel.data.isInstance = true;
+		gpuRes->cbModel.UpdateBuffer(deviceRes);
+		buildingsPositions[key].model->Draw(deviceRes, true);
+
+		/*
+		for (Vector3 position : *(buildingsPositions[key].positions)) {
+			gpuRes->cbModel.data.model = Matrix::CreateTranslation(position).Transpose();
+			gpuRes->cbModel.UpdateBuffer(deviceRes);
+			buildingsPositions[key].model->Draw(deviceRes);
+		}*/
+
+	}
 }
 
 void World::Reset()
@@ -365,6 +388,8 @@ void World::PlaceBuilding(Building type, int x, int y, int z)
 	else {
 		if (GetAmountOfAdjacentRoads(x, z) > 0) passiveIncome += buildingsPositions[type].income;
 	}
+
+	RegenerateBufferFor(type);
 }
 
 void World::RemoveBuilding(int x, int y, int z)
@@ -397,6 +422,8 @@ void World::RemoveBuilding(int x, int y, int z)
 			else {
 				if (GetAmountOfAdjacentRoads(x, z) > 0) passiveIncome -= buildingsPositions[type].income;
 			}
+
+			RegenerateBufferFor(type);
 
 			return;
 		}
@@ -432,6 +459,11 @@ int World::GetAmountOfAdjacentRoads(int x, int y)
 	if (y < mapSize-1 && buildings[x + (y + 1) * mapSize] == ROAD) total++;
 
 	return total;
+}
+
+void World::RegenerateBufferFor(Building building)
+{
+	buildingsPositions[building].model->ResetInstanceBuffer(deviceRes, buildingsPositions[building].positions);
 }
 
 void World::Create(DeviceResources* deviceRes)

@@ -44,12 +44,15 @@ class World {
 	int waterGain = 0;
 	int passiveIncome = 1;
 
+	DeviceResources* deviceRes;
+
 public:
 	World();
 	virtual ~World();
 	void Generate(DeviceResources* deviceRes, int seed, float treeThreshold);
 	void GenerateFromFile(DeviceResources* deviceRes, std::wstring filePath, float treeThreshold);
 	void Draw(Camera* camera, DeviceResources* deviceRes);
+	void DrawBuildings(Camera* camera, DeviceResources* deviceRes);
 	void Reset();
 
 	Chunk* GetChunk(int cx, int cy, int cz);
@@ -72,5 +75,6 @@ public:
 	friend class Chunk;
 
 private:
+	void RegenerateBufferFor(Building building);
 	void Create(DeviceResources* deviceRes);
 };

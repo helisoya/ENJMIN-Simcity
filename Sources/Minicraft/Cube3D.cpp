@@ -102,12 +102,33 @@ void Cube3D::Generate(DeviceResources* deviceRes) {
 	needRegen = false;
 }
 
-void Cube3D::Draw(DeviceResources* deviceRes) {
+void Cube3D::Draw(DeviceResources* deviceRes, bool isInstanced) {
 	if (needRegen)
 		Generate(deviceRes);
 
-	if (vb.Size() == 0) return;
-	vb.Apply(deviceRes, 0);
-	ib.Apply(deviceRes);
-	deviceRes->GetD3DDeviceContext()->DrawIndexed(ib.Size(), 0, 0);
+	if (!isInstanced) {
+		if (vb.Size() == 0) return;
+		vb.Apply(deviceRes, 0);
+		ib.Apply(deviceRes);
+		deviceRes->GetD3DDeviceContext()->DrawIndexed(ib.Size(), 0, 0);
+	}
+	else {
+		UINT strides[2] = { sizeof(VertexLayout_PositionNormalUV), sizeof(Vector3) };
+		UINT offsets[2] = { 0, 0 };
+
+		ID3D11Buffer* vertInstBuffers[2] = { vb.get().Get(), instbuffer.get().Get() };
+
+		ib.Apply(deviceRes);
+		//Set the models vertex buffer
+		deviceRes->GetD3DDeviceContext()->IASetVertexBuffers(0, 2, vertInstBuffers, strides, offsets);
+		deviceRes->GetD3DDeviceContext()->DrawIndexedInstanced(ib.Size(), instbuffer.Size(), 0, 0, 0);
+	}
+
+
+}
+
+void Cube3D::ResetInstanceBuffer(DeviceResources* deviceRes, std::vector<Vector3>* positions)
+{
+	instbuffer.data = *positions;
+	instbuffer.Create(deviceRes);
 }

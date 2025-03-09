@@ -18,6 +18,10 @@ public:
 		data.clear();
 	}
 
+	ComPtr<ID3D11Buffer> get(){
+		return buffer;
+	}
+
 	size_t Size() {
 		return data.size();
 	}

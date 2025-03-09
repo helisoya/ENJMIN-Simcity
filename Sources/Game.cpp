@@ -74,7 +74,8 @@ void Game::Initialize(HWND window, int width, int height) {
 	blockShader.Create(m_deviceResources.get());
 	skyboxShader.Create(m_deviceResources.get());
 	GenerateInputLayout<VertexLayout_PositionColor>(m_deviceResources.get(), &basicShader);
-	GenerateInputLayout<VertexLayout_PositionNormalUV>(m_deviceResources.get(), &blockShader);
+	//GenerateInputLayout<VertexLayout_PositionNormalUV>(m_deviceResources.get(), &blockShader);
+	GenerateInputLayout<VertexLayout_PositionNormalUVInstanced>(m_deviceResources.get(), &blockShader);
 
 	texture.Create(m_deviceResources.get());
 	textureSky.Create(m_deviceResources.get());
@@ -155,7 +156,8 @@ void Game::Render(DX::StepTimer const& timer) {
 	
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	
-	ApplyInputLayout<VertexLayout_PositionNormalUV>(m_deviceResources.get());
+	//ApplyInputLayout<VertexLayout_PositionNormalUV>(m_deviceResources.get());
+	ApplyInputLayout<VertexLayout_PositionNormalUVInstanced>(m_deviceResources.get());
 
 	// Draw Skybox
 
@@ -175,6 +177,15 @@ void Game::Render(DX::StepTimer const& timer) {
 	texture.Apply(m_deviceResources.get());
 	world.Draw(player.GetCamera(), m_deviceResources.get());
 	player.Draw(m_deviceResources.get());
+	
+	// Draw buildings
+
+	ApplyInputLayout<VertexLayout_PositionNormalUVInstanced>(m_deviceResources.get());
+	world.DrawBuildings(player.GetCamera(), m_deviceResources.get());
+
+	// Draw UI
+
+	//ApplyInputLayout<VertexLayout_PositionNormalUV>(m_deviceResources.get());
 
 	hudCamera.ApplyCamera(m_deviceResources.get());
 	ApplyInputLayout<VertexLayout_PositionColor>(m_deviceResources.get());

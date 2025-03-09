@@ -7,6 +7,7 @@ struct Input {
 cbuffer ModelData : register(b0)
 {
     float4x4 Model;
+    bool isInstance;
 };
 cbuffer CameraData : register(b1)
 {
