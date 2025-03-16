@@ -17,12 +17,14 @@ class Player {
 
 	PerspectiveCamera camera = PerspectiveCamera(75, 1);
 
-	Cube3D highlightCube = Cube3D(WOOL);
+	Cube3D highlightCube = Cube3D(NOTHING);
 	Building possibleBuildings[7] = {NOTHING,ROAD,HOUSE,SHOP,FACTORY,ENERGYPLANT,WATERPLANT};
 	char* buildingsNames[7] = { "Destroy","Road","House","Shop","Factory","Energy Plant","Water Plant" };
 	int prices[7] = {25,2,4,6,10,15,15};
 	int currentBuildingIdx = 0;
 	int money = 100;
+
+	float currentYaw = 0;
 
 	float passiveIncomeCooldown = 10;
 

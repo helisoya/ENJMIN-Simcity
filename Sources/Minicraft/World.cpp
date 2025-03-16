@@ -6,6 +6,8 @@
 #include "iostream"
 #include "fstream"
 #include "sstream"
+#include "Chunk.h"
+#include "Cube3D.h"
 
 World::World() {
 	for (int x = 0; x < WORLD_SIZE; x++) {
@@ -35,43 +37,43 @@ World::World() {
 	}
 
 	BuildingData data = {};
-	data.model = new Cube3D(LOG);
+	data.model = new Cube3D(TREE);
 	data.positions = new std::vector<Vector3>();
 	data.energy = 0; data.water = 0; data.income = 0;
 	buildingsPositions[TREE] = data;
 
 	data = {};
-	data.model = new Cube3D(WOOD);
+	data.model = new Cube3D(HOUSE);
 	data.positions = new std::vector<Vector3>();
 	data.energy = -1; data.water = -1; data.income = 2;
 	buildingsPositions[HOUSE] = data;
 
 	data = {};
-	data.model = new Cube3D(SLAB);
+	data.model = new Cube3D(SHOP);
 	data.positions = new std::vector<Vector3>();
 	data.energy = -2; data.water = -1; data.income = 4;
 	buildingsPositions[SHOP] = data;
 
 	data = {};
-	data.model = new Cube3D(BRICK);
+	data.model = new Cube3D(FACTORY);
 	data.positions = new std::vector<Vector3>();
 	data.energy = -5; data.water = -2; data.income = 8;
 	buildingsPositions[FACTORY] = data;
 
 	data = {};
-	data.model = new Cube3D(DIAMOND_BLOCK);
+	data.model = new Cube3D(WATERPLANT);
 	data.positions = new std::vector<Vector3>();
 	data.energy = -2; data.water = 10; data.income = 0;
 	buildingsPositions[WATERPLANT] = data;
 
 	data = {};
-	data.model = new Cube3D(GOLD_BLOCK);
+	data.model = new Cube3D(ENERGYPLANT);
 	data.positions = new std::vector<Vector3>();
 	data.energy = 5; data.water = 0; data.income = 0;
 	buildingsPositions[ENERGYPLANT] = data;
 
 	data = {};
-	data.model = new Cube3D(BLACKWOOL);
+	data.model = new Cube3D(ROAD);
 	data.positions = new std::vector<Vector3>();
 	data.energy = 0; data.water = 0; data.income = 0;
 	buildingsPositions[ROAD] = data;
@@ -282,7 +284,7 @@ void World::DrawBuildings(Camera* camera, DeviceResources* deviceRes)
 
 void World::Reset()
 {
-	passiveIncome = 1;
+	passiveIncome = 0;
 	energyGain = 0;
 	waterGain = 0;
 
@@ -445,7 +447,7 @@ int World::GetPassiveIncome()
 	int result = passiveIncome;
 	if (energyGain < 0) result = result / 2.0f;
 	if (waterGain < 0) result = result / 2.0f;
-	return result;
+	return result + 1;
 }
 
 int World::GetAmountOfAdjacentRoads(int x, int y)

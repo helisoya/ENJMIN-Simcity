@@ -45,7 +45,9 @@ Skybox skybox;
 
 bool showGUI = true;
 int seed = 786768768876;
-float treeThreshold = 0.3f;
+float treeThreshold = 0.4f;
+char filenameBuf[50] = "Coast";
+std::vector<const char*> maps = {"Coast","River","Mountain","Delta", "Islands","Channel","Extreme" };
 
 // Game
 Game::Game() noexcept(false) {
@@ -89,7 +91,7 @@ void Game::Initialize(HWND window, int width, int height) {
 	light.Generate(m_deviceResources.get());
 
 	//world.Generate(m_deviceResources.get(),786768768876,treeThreshold);
-	world.GenerateFromFile(m_deviceResources.get(), L"TestMap", treeThreshold);
+	world.GenerateFromFile(m_deviceResources.get(), L"Coast", treeThreshold);
 	skybox.Generate(m_deviceResources.get());
 
 	crosshairLine.PushVertex({ {-7, 0, 1, 1}, {1, 1, 1, 1} });
@@ -264,16 +266,36 @@ void Game::Im(DX::StepTimer const& timer)
 
 		ImGui::Text("Filename : ");
 		ImGui::SameLine();
-		char* filename = "TestMap";
-		ImGui::InputText("  ", filename,20);
+		ImGui::InputText("  ", filenameBuf,50);
 		if (ImGui::Button("Generate from file")) {
-			const size_t cSize = strlen(filename) + 1;
+			const size_t cSize = strlen(filenameBuf) + 1;
 			wchar_t* wc = new wchar_t[cSize];
-			mbstowcs(wc, filename, cSize);
+			mbstowcs(wc, filenameBuf, cSize);
 
 			world.GenerateFromFile(m_deviceResources.get(), wc, treeThreshold);
 			player.Reset();
 		}
+
+		ImGui::Spacing();
+		ImGui::Spacing();
+
+		for (int i = 0; i < maps.size(); i++) {
+			ImGui::PushID(i);
+			if (ImGui::Button(maps.at(i))) {
+				const size_t cSize = strlen(maps.at(i)) + 1;
+				wchar_t* wc = new wchar_t[cSize];
+				mbstowcs(wc, maps.at(i), cSize);
+
+				world.GenerateFromFile(m_deviceResources.get(), wc, treeThreshold);
+				player.Reset();
+			}
+			ImGui::PopID();
+			if (i != maps.size() - 1) {
+				ImGui::SameLine();
+			}
+		}
+
+
 	}
 	if (ImGui::CollapsingHeader("Controls")) {
 		ImGui::Text("Left Click : Build (If you have enough money)");

@@ -6,7 +6,7 @@
 #include "Minicraft/Block.h"
 
 class Cube3D {
-	BlockId blockId;
+	Building buildingType;
 
 	VertexBuffer<VertexLayout_PositionNormalUV> vb;
 	VertexBuffer<Vector3> instbuffer;
@@ -16,10 +16,10 @@ class Cube3D {
 public:
 	Matrix model = Matrix::Identity;
 
-	Cube3D(BlockId id) : blockId(id) {}
+	Cube3D(Building type) : buildingType(type) {}
 
-	BlockId GetBlockId() const { return blockId; }
-	void SetBlockId(const BlockId& id) { blockId = id; needRegen = true; }
+	Building GetBuilding() const { return buildingType; }
+	void SetBuilding(const Building& type) { this->buildingType = type; needRegen = true; }
 
 	void Generate(DeviceResources* deviceRes);
 	void Draw(DeviceResources* deviceRes, bool isInstanced = false);

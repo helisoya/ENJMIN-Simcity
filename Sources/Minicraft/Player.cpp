@@ -12,7 +12,7 @@ using ButtonState = Mouse::ButtonStateTracker::ButtonState;
 void Player::GenerateGPUResources(DeviceResources* deviceRes) {
 	highlightCube.Generate(deviceRes);
 
-	camera.SetRotation(Quaternion::CreateFromYawPitchRoll(0,-45,0));
+	camera.SetRotation(Quaternion::CreateFromYawPitchRoll(currentYaw,-45,0));
 }
 
 void Player::Update(float dt, DirectX::Keyboard::State kb, DirectX::Mouse::State ms) {
@@ -33,11 +33,25 @@ void Player::Update(float dt, DirectX::Keyboard::State kb, DirectX::Mouse::State
 	if (kb.S) delta += Vector3::Backward;
 	if (kb.Q) delta += Vector3::Left;
 	if (kb.D) delta += Vector3::Right;
-	position += delta * speed * dt;
+	Vector3 move = Vector3::TransformNormal(delta, camera.GetInverseViewMatrix());
+	move.y = 0;
+	move.Normalize();
+	position += move * speed * dt;
 
 	float scrollValue = -((float)ms.scrollWheelValue * 0.25f);
 	position += Vector3::Up * scrollValue * walkSpeed * dt;
 	position.y = std::clamp(position.y, 2.0f, 50.0f);
+
+	int rotationSide = (kb.E ? 1 : 0) - (kb.A ? 1 : 0);
+
+	if (rotationSide != 0) {
+		currentYaw += rotationSide * dt * 0.8f;
+		if (currentYaw < -360.0f) currentYaw += 360.f;
+		else if (currentYaw > 360.0f) currentYaw -= 360.f;
+
+		camera.SetRotation(Quaternion::CreateFromYawPitchRoll(currentYaw, -45, 0));
+	}
+
 
 	camera.SetPosition(position + Vector3(0, 1.25f, 0));
 	highlightCube.model = Matrix::Identity;

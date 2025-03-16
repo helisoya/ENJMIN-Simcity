@@ -47,17 +47,73 @@ void Cube3D::Generate(DeviceResources* deviceRes) {
 	vb.Clear();
 	ib.Clear();
 
-	BlockData data = BlockData::Get(blockId);
+	BlockData data = BlockData::Get(WOOL);
 	float uvxSide = (data.texIdSide % 16) / BLOCK_TEXSIZE;
 	float uvySide = (data.texIdSide / 16) / BLOCK_TEXSIZE;
 
-	if (blockId == BLACKWOOL) {
-		// Hard Code Roads for now
+	if (buildingType == ROAD) {
+		data = BlockData::Get(BLACKWOOL);
 		PushFace({ -0.5f, -0.48f, -0.5f }, Vector3::Backward, Vector3::Right, Vector3::Down, data.texIdBottom,false);
 	}
-	else if (blockId == WOOD) {
+	else if (buildingType == FACTORY) {
 
-		// House
+		data = BlockData::Get(BRICK);
+
+		Vector3 positions[] = { Vector3(-0.25f,0,-0.25f), Vector3(0.25f,0,-0.25f), Vector3(-0.25f,0,0.25f), Vector3(0.25f,0,0.25f) };
+
+		for (Vector3 pos : positions) {
+
+			PushFace({ pos.x -0.1f,pos.y -0.5f, pos.z + 0.15f }, Vector3::Up * 0.8f, Vector3::Right * 0.2f, Vector3::Backward, data.texIdSide);
+			PushFace({ pos.x + 0.1f,pos.y -0.5f,pos.z -0.15f }, Vector3::Up * 0.8f, Vector3::Left * 0.2f, Vector3::Forward, data.texIdSide);
+			PushFace({ pos.x -0.1f,pos.y -0.5f,pos.z -0.15f }, Vector3::Backward * 0.3f, Vector3::Right * 0.2f, Vector3::Down, data.texIdBottom);
+			PushFace({ pos.x -0.1f,pos.y -0.5f,pos.z +  0.15f }, Vector3::Up * 0.8f, Vector3::Left * 0.1f + Vector3::Forward * 0.15f, Vector3::Backward + Vector3::Left, data.texIdSide, false);
+			PushFace({ pos.x -0.1f,pos.y -0.5f,pos.z -0.15f }, Vector3::Up * 0.8f, Vector3::Left * 0.1f + Vector3::Backward * 0.15f, Vector3::Forward + Vector3::Left, data.texIdSide);
+			PushFace({ pos.x + 0.1f,pos.y -0.5f,pos.z + 0.15f }, Vector3::Up * 0.8f, Vector3::Right * 0.1f + Vector3::Forward * 0.15f, Vector3::Backward + Vector3::Right, data.texIdSide);
+			PushFace({ pos.x + 0.1f,pos.y -0.5f,pos.z -0.15f }, Vector3::Up * 0.8f, Vector3::Right * 0.1f + Vector3::Backward * 0.15f, Vector3::Forward + Vector3::Right, data.texIdSide, false);
+			PushFace({ pos.x -0.1f,pos.y + 0.3f,pos.z + 0.15f }, Vector3::Forward * 0.3f, Vector3::Right * 0.2f, Vector3::Up, data.texIdTop);
+			PushTriangle({ pos.x -0.20f,pos.y + 0.3f,pos.z + 0.0f }, { pos.x -0.10f,pos.y + 0.3f,pos.z + -0.15f }, { pos.x -0.10f,pos.y + 0.3f,pos.z + 0.15f }, Vector3::Up, data.texIdTop);
+			PushTriangle({ pos.x + 0.20f,pos.y + 0.3f,pos.z + 0.0f }, { pos.x + 0.10f,pos.y + 0.3f,pos.z + 0.15f }, { pos.x + 0.10f,pos.y + 0.3f,pos.z -0.15f }, Vector3::Up, data.texIdTop);
+		}
+
+		PushFace({ -0.3f, -0.5f,  0.3f }, Vector3::Up * 0.5f, Vector3::Right * 0.6f, Vector3::Backward, data.texIdSide);
+		PushFace({ 0.3f, -0.5f,  0.3f }, Vector3::Up * 0.5f, Vector3::Forward * 0.6f, Vector3::Right, data.texIdSide);
+		PushFace({ 0.3f, -0.5f, -0.3f }, Vector3::Up * 0.5f, Vector3::Left * 0.6f, Vector3::Forward, data.texIdSide);
+		PushFace({ -0.3f, -0.5f, -0.3f }, Vector3::Up * 0.5f, Vector3::Backward * 0.6f, Vector3::Left, data.texIdSide);
+		PushFace({ -0.3f,  0.0f,  0.3f }, Vector3::Forward * 0.6f, Vector3::Right * 0.6f, Vector3::Up, data.texIdTop);
+		PushFace({ -0.3f, -0.5f, -0.3f }, Vector3::Backward * 0.6f, Vector3::Right * 0.6f, Vector3::Down, data.texIdBottom);
+	}
+	else if (buildingType == WATERPLANT) {
+
+		data = BlockData::Get(STONE);
+
+		PushFace({ -0.3f, -0.5f,  0.3f }, Vector3::Up * 0.3f, Vector3::Right * 0.6f, Vector3::Backward, data.texIdSide);
+		PushFace({ 0.3f, -0.5f, -0.3f }, Vector3::Up * 0.3f, Vector3::Left * 0.6f, Vector3::Forward, data.texIdSide);
+		PushFace({ -0.3f, -0.5f, -0.3f }, Vector3::Backward * 0.6f, Vector3::Right * 0.6f, Vector3::Down, data.texIdBottom);
+		PushFace({ -0.3f, -0.5f,  0.3f }, Vector3::Up * 0.3f, Vector3::Left * 0.1f + Vector3::Forward * 0.3f, Vector3::Backward + Vector3::Left, data.texIdSide,false);
+		PushFace({ -0.3f, -0.5f, -0.3f }, Vector3::Up * 0.3f, Vector3::Left * 0.1f + Vector3::Backward * 0.3f, Vector3::Forward + Vector3::Left, data.texIdSide);
+		PushFace({ 0.3f, -0.5f,  0.3f }, Vector3::Up * 0.3f, Vector3::Right * 0.1f + Vector3::Forward * 0.3f, Vector3::Backward + Vector3::Right, data.texIdSide);
+		PushFace({ 0.3f, -0.5f, -0.3f }, Vector3::Up * 0.3f, Vector3::Right * 0.1f + Vector3::Backward * 0.3f, Vector3::Forward + Vector3::Right, data.texIdSide, false);
+		PushFace({ -0.3f,  -0.2f,  0.3f }, Vector3::Forward * 0.6f, Vector3::Right * 0.6f, Vector3::Up, data.texIdTop);
+		PushTriangle({ -0.4f, -0.2f, 0.0f }, { -0.3f, -0.2f, -0.3f }, { -0.3f, -0.2f, 0.3f }, Vector3::Up, data.texIdTop);
+		PushTriangle({ 0.4f, -0.2f, 0.0f }, { 0.3f, -0.2f, 0.3f }, { 0.3f, -0.2f, -0.3f }, Vector3::Up, data.texIdTop);
+	}
+
+	else if (buildingType == SHOP) {
+
+		data = BlockData::Get(SLAB);
+
+		PushFace({ -0.3f, -0.5f,  0.3f }, Vector3::Up * 0.6f, Vector3::Right * 0.6f, Vector3::Backward, data.texIdSide);
+		PushFace({ 0.3f, -0.5f,  0.3f }, Vector3::Up * 0.6f, Vector3::Forward * 0.6f, Vector3::Right, data.texIdSide);
+		PushFace({ 0.3f, -0.5f, -0.3f }, Vector3::Up * 0.6f, Vector3::Left * 0.6f, Vector3::Forward, data.texIdSide);
+		PushFace({ -0.3f, -0.5f, -0.3f }, Vector3::Up * 0.6f, Vector3::Backward * 0.6f, Vector3::Left, data.texIdSide);
+		PushFace({ -0.3f, -0.5f, -0.3f }, Vector3::Backward * 0.6f, Vector3::Right * 0.6f, Vector3::Down, data.texIdBottom);
+		PushFace({ -0.3f,  0.1f,  0.3f }, Vector3::Forward * 0.6f, Vector3::Right * 0.6f, Vector3::Up, data.texIdTop);
+		PushFace({ -0.4f,  0.05f,  0.4f }, Vector3::Forward * 0.8f, Vector3::Right * 0.8f, Vector3::Up, data.texIdTop);
+	}
+
+	else if (buildingType == HOUSE) {
+
+		data = BlockData::Get(WOOD);
 
 		PushFace({ -0.3f, -0.5f,  0.3f }, Vector3::Up * 0.6f, Vector3::Right * 0.6f, Vector3::Backward, data.texIdSide);
 		PushFace({ 0.3f, -0.5f,  0.3f }, Vector3::Up * 0.6f, Vector3::Forward * 0.6f, Vector3::Right, data.texIdSide);
@@ -69,10 +125,10 @@ void Cube3D::Generate(DeviceResources* deviceRes) {
 		PushTriangle({ 0.3f, 0.1f, 0.3f }, { -0.3f, 0.1f, 0.3f }, { 0.0f, 0.4f, 0.3f } , Vector3::Backward, data.texIdSide);
 		PushFace({ -0.3f,  0.1f,  0.3f }, Vector3::Forward * 0.6f, Vector3::Right * 0.3f + Vector3::Up * 0.3f, Vector3::Up + Vector3::Left, data.texIdTop);
 		PushFace({ 0.3f,  0.1f,  0.3f }, Vector3::Left * 0.3f + Vector3::Up * 0.3f, Vector3::Forward * 0.6f, Vector3::Up + Vector3::Right, data.texIdTop);
-
 	}
-	else if (blockId == LOG) {
-		// Hard Code Tree for now
+	else if (buildingType == TREE) {
+
+		data = BlockData::Get(LOG);
 
 		PushFace({ -0.1f, -0.5f,  0.1f }, Vector3::Up * 0.2f, Vector3::Right * 0.2f, Vector3::Backward, data.texIdSide);
 		PushFace({ 0.1f, -0.5f,  0.1f }, Vector3::Up * 0.2f, Vector3::Forward * 0.2f, Vector3::Right, data.texIdSide);
@@ -88,10 +144,7 @@ void Cube3D::Generate(DeviceResources* deviceRes) {
 		PushFace({ -0.25f, -0.3f, -0.25f }, Vector3::Up * 0.5f, Vector3::Backward * 0.5f, Vector3::Left, data.texIdSide);
 		PushFace({ -0.25f,  0.2f,  0.25f }, Vector3::Forward * 0.5f, Vector3::Right * 0.5f, Vector3::Up, data.texIdTop);
 	}
-	else if (blockId == GOLD_BLOCK) {
-		// Hard Code Energy Plant for now
-
-
+	else if (buildingType == ENERGYPLANT) {
 
 		Vector3 positions[] = { Vector3(0,0,0), Vector3(-0.3f,0,-0.3f), Vector3(0.3f,0,-0.3f), Vector3(-0.3f,0,0.3f), Vector3(0.3f,0,0.3f) };
 
@@ -112,6 +165,7 @@ void Cube3D::Generate(DeviceResources* deviceRes) {
 
 	}
 	else {
+		// Just a plain block
 		PushFace({ -0.5f, -0.5f,  0.5f }, Vector3::Up, Vector3::Right, Vector3::Backward, data.texIdSide);
 		PushFace({ 0.5f, -0.5f,  0.5f }, Vector3::Up, Vector3::Forward, Vector3::Right, data.texIdSide);
 		PushFace({ 0.5f, -0.5f, -0.5f }, Vector3::Up, Vector3::Left, Vector3::Forward, data.texIdSide);

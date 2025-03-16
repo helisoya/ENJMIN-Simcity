@@ -3,8 +3,6 @@
 #include "Engine/BlendState.h"
 #include "Engine/Camera.h"
 #include "Minicraft/Block.h"
-#include "Minicraft/Chunk.h"
-#include "Minicraft/Cube3D.h"
 
 #define WORLD_SIZE 6
 #define WORLD_HEIGHT 1
@@ -42,7 +40,7 @@ class World {
 
 	int energyGain = 0;
 	int waterGain = 0;
-	int passiveIncome = 1;
+	int passiveIncome = 0;
 
 	DeviceResources* deviceRes;
 
