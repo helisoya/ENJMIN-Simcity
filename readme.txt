@@ -1,0 +1,1 @@
+To make the project work, disable the precompiled header for the imgui files in imgui/
