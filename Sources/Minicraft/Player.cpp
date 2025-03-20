@@ -19,12 +19,15 @@ void Player::Update(float dt, DirectX::Keyboard::State kb, DirectX::Mouse::State
 	keyboardTracker.Update(kb);
 	mouseTracker.Update(ms);
 
+
+	// Add passive income if needed
 	passiveIncomeCooldown -= dt;
 	if (passiveIncomeCooldown <= 0) {
 		passiveIncomeCooldown = 10.0f;
 		money += world->GetPassiveIncome();
 	}
 
+	// Movements
 	float speed = walkSpeed;
 	if (kb.LeftShift) speed *= 2;
 
@@ -38,12 +41,15 @@ void Player::Update(float dt, DirectX::Keyboard::State kb, DirectX::Mouse::State
 	move.Normalize();
 	position += move * speed * dt;
 
+
+	// Zoom
 	float scrollValue = -((float)ms.scrollWheelValue * 0.25f);
 	position += Vector3::Up * scrollValue * walkSpeed * dt;
 	position.y = std::clamp(position.y, 2.0f, 50.0f);
 
-	int rotationSide = (kb.E ? 1 : 0) - (kb.A ? 1 : 0);
 
+	// Rotation
+	int rotationSide = (kb.E ? 1 : 0) - (kb.A ? 1 : 0);
 	if (rotationSide != 0) {
 		currentYaw += rotationSide * dt * 0.8f;
 		if (currentYaw < -360.0f) currentYaw += 360.f;
@@ -52,10 +58,12 @@ void Player::Update(float dt, DirectX::Keyboard::State kb, DirectX::Mouse::State
 		camera.SetRotation(Quaternion::CreateFromYawPitchRoll(currentYaw, -45, 0));
 	}
 
-
+	// The camera's position
 	camera.SetPosition(position + Vector3(0, 1.25f, 0));
 	highlightCube.model = Matrix::Identity;
 
+
+	// Change current building
 	if (kb.D1) currentBuildingIdx = 0;
 	else if (kb.D2) currentBuildingIdx = 1;
 	else if (kb.D3) currentBuildingIdx = 2;
@@ -64,26 +72,37 @@ void Player::Update(float dt, DirectX::Keyboard::State kb, DirectX::Mouse::State
 	else if (kb.D6) currentBuildingIdx = 5;
 	else if (kb.D7) currentBuildingIdx = 6;
 
+	// Raycast for a cube to place a building on
 	auto cubes = Raycast(camera.GetPosition(), camera.Forward(), 100);
 	for (int i = 0; i < cubes.size(); i++) {
 		BlockId* block = world->GetCube(cubes[i][0], cubes[i][1], cubes[i][2]);
-		if (block == nullptr || cubes[i][1] >= 16 || cubes[i][1] < 0) continue;
+		if (block == nullptr || cubes[i][1] >= 16 || cubes[i][1] < 0) continue; 
 		BlockData blockData = BlockData::Get(*block);
 		if (blockData.flags & BF_NO_RAYCAST) continue;
+
+		// Cube exists AND its raycastable
 
 		highlightCube.model = Matrix::CreateTranslation(cubes[i][0], cubes[i][1], cubes[i][2]);
 
 		if ((cubes[i][1] != 1 && cubes[i][1] != 2)) continue;
 
-		if (mouseTracker.leftButton == ButtonState::PRESSED && money >= prices[currentBuildingIdx]) {
-			//world->UpdateBlock(cubes[i][0], cubes[i][1]+1, cubes[i][2], LOG);
+		// The cube is a the required height (1 - 2)
 
-			if (possibleBuildings[currentBuildingIdx] == WATERPLANT && !world->IsAdjacentToWater(cubes[i][0], cubes[i][1], cubes[i][2])) continue;
+		if (mouseTracker.leftButton == ButtonState::PRESSED && money >= prices[currentBuildingIdx]) {
+			// Player wants to place or destroy a building, an he can pay the price
+
+			// Water plant can only be built near water
+			if (possibleBuildings[currentBuildingIdx] == WATERPLANT && !world->IsAdjacentToWater(cubes[i][0], cubes[i][1], cubes[i][2])) continue; 
+			
+			// You can only destroy a building 
 			if (possibleBuildings[currentBuildingIdx] == NOTHING && world->GetBuilding(cubes[i][0], cubes[i][2]) == NOTHING) continue;
+
+			// You need an empty space to build something
 			Building other = world->GetBuilding(cubes[i][0], cubes[i][2]);
 			if (possibleBuildings[currentBuildingIdx] != NOTHING && world->GetBuilding(cubes[i][0], cubes[i][2]) != NOTHING) continue;
 
 			if (possibleBuildings[currentBuildingIdx] != NOTHING) {
+				// Adding a building
 				money -= prices[currentBuildingIdx];
 				world->PlaceBuilding(possibleBuildings[currentBuildingIdx], cubes[i][0], cubes[i][1] + 1, cubes[i][2]);
 			}

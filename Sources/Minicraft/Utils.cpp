@@ -23,6 +23,7 @@ int signInt(int v) {
 std::vector<std::array<int, 3>> Raycast(Vector3 pos, Vector3 dir, float maxDist) {
 	std::map<float, std::array<int, 3>> cubes;
 
+	// For X 
 	if (dir.x != 0) {
 		float deltaYX = dir.y / dir.x;
 		float deltaZX = dir.z / dir.x;
@@ -43,6 +44,8 @@ std::vector<std::array<int, 3>> Raycast(Vector3 pos, Vector3 dir, float maxDist)
 			cubeX = cubeX + sign(dir.x);
 		} while (true);
 	}
+
+	// For Y
 	if (dir.y != 0) {
 		float deltaXY = dir.x / dir.y;
 		float deltaZY = dir.z / dir.y;
@@ -63,6 +66,8 @@ std::vector<std::array<int, 3>> Raycast(Vector3 pos, Vector3 dir, float maxDist)
 			cubeY = cubeY + sign(dir.y);
 		} while (true);
 	}
+
+	// for Z
 	if (dir.z != 0) {
 		float deltaXZ = dir.x / dir.z;
 		float deltaYZ = dir.y / dir.z;

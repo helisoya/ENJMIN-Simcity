@@ -3,6 +3,9 @@
 using namespace DirectX::SimpleMath;
 using Microsoft::WRL::ComPtr;
 
+/// <summary>
+/// Represents a shader
+/// </summary>
 class Shader {
 	std::wstring shaderName;
 	std::vector<uint8_t> psBytecode;
@@ -13,12 +16,27 @@ public:
 	std::vector<uint8_t> vsBytecode;
 	Shader(std::wstring name) : shaderName(name) {};
 
+	/// <summary>
+	/// Creates the shader
+	/// </summary>
+	/// <param name="deviceRes">The game's device resources</param>
 	void Create(DeviceResources* deviceRes);
+
+	/// <summary>
+	/// Applies the shader
+	/// </summary>
+	/// <param name="deviceRes">The game's device resources</param>
 	void Apply(DeviceResources* deviceRes);
 };
 
 extern std::unordered_map<std::string, Microsoft::WRL::ComPtr<ID3D11InputLayout>> g_inputLayouts;
 
+/// <summary>
+/// Generates an input layout
+/// </summary>
+/// <typeparam name="T">The input layout's elements</typeparam>
+/// <param name="deviceRes">The game's device resources</param>
+/// <param name="basicShader">The linked shader</param>
 template <typename T>
 void GenerateInputLayout(DeviceResources* deviceRes, Shader* basicShader) {
 	auto it = g_inputLayouts.find(typeid(T).name());
@@ -31,6 +49,11 @@ void GenerateInputLayout(DeviceResources* deviceRes, Shader* basicShader) {
 		g_inputLayouts[typeid(T).name()].ReleaseAndGetAddressOf());
 }
 
+/// <summary>
+/// Applies an input layout
+/// </summary>
+/// <typeparam name="T">The input layout's elements</typeparam>
+/// <param name="deviceRes">The game's device resources</param>
 template <typename T>
 void ApplyInputLayout(DeviceResources* deviceRes) {
 	auto it = g_inputLayouts.find(typeid(T).name());

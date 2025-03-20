@@ -8,6 +8,9 @@
 
 using namespace DirectX::SimpleMath;
 
+/// <summary>
+/// Represents the player
+/// </summary>
 class Player {
 	World* world = nullptr;
 
@@ -33,11 +36,32 @@ class Player {
 public:
 	Player(World* w, Vector3 pos) : world(w), position(pos){}
 
+	/// <summary>
+	/// Generates the player's resources
+	/// </summary>
+	/// <param name="deviceRes">The game's device resources</param>
 	void GenerateGPUResources(DeviceResources* deviceRes);
+
+	/// <summary>
+	/// Updates the player
+	/// </summary>
+	/// <param name="dt">The delta time</param>
+	/// <param name="kb">The keyboard's state</param>
+	/// <param name="ms">The mouse's state</param>
 	void Update(float dt, DirectX::Keyboard::State kb, DirectX::Mouse::State ms);
+
+	/// <summary>
+	/// Draws the player
+	/// </summary>
+	/// <param name="deviceRes">The game's device resources</param>
 	void Draw(DeviceResources* deviceRes);
+
+	// Resets the player
 	void Reset();
+
+	// ImGui pass for the player
 	void Im(DX::StepTimer const& timer);
 
+	// Gets the player's camera
 	PerspectiveCamera* GetCamera() { return &camera; }
 };

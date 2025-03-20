@@ -2,6 +2,8 @@
 
 #define BLOCK_TEXSIZE 1.0f / 16.0f
 
+// Represents the different blocks and their flags
+
 enum ShaderPass {
 	SP_OPAQUE,
 	SP_TRANSPARENT,
@@ -71,6 +73,9 @@ enum BlockId: uint8_t {
 	BLOCKS(EXTRACT_BLOCK_ID)
 };
 
+/// <summary>
+/// Represents a block's data
+/// </summary>
 class BlockData {
 public:
 	BlockId id;
@@ -98,5 +103,6 @@ public:
 		flags(flags),
 		pass(pass) {}
 
+	// Gets a block's data given its ID
 	static const BlockData& Get(const BlockId id);
 };

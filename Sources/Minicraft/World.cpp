@@ -10,6 +10,8 @@
 #include "Cube3D.h"
 
 World::World() {
+
+	// Generate empty world
 	for (int x = 0; x < WORLD_SIZE; x++) {
 		for (int y = 0; y < WORLD_HEIGHT; y++) {
 			for (int z = 0; z < WORLD_SIZE; z++) {
@@ -35,6 +37,8 @@ World::World() {
 	for (int x = 0; x < WORLD_SIZE * CHUNK_SIZE * WORLD_SIZE * CHUNK_SIZE; x++) {
 		buildings[x] = NOTHING;
 	}
+
+	// Generate building datas
 
 	BuildingData data = {};
 	data.model = new Cube3D(TREE);
@@ -103,10 +107,15 @@ void World::Generate(DeviceResources* deviceRes,int seed, float treeThreshold) {
 
 	for (int x = 0; x < CHUNK_SIZE * WORLD_SIZE; x++) {
 		for (int z = 0; z < CHUNK_SIZE * WORLD_SIZE; z++) {
-
+			// Sample noise
 			noiseValue = (perlin.noise2D(x / scale, z / scale) + 1) / 2;
 			treeNoiseValue = (perlin.noise2D(x / scale * 2, z / scale * 2) + 1) / 2;
 			yMax = (int)(noiseValue * 6);
+
+			// 0 = Sand
+			// 1 - 2 = Grass
+			// 3 - 4 = Rocks
+			// If y == 0, then there will be water at (x,1,z)
 
 			if (yMax <= 1 ) {
 				auto block = GetCube(x, 1, z);
@@ -129,6 +138,7 @@ void World::Generate(DeviceResources* deviceRes,int seed, float treeThreshold) {
 			}
 
 			if (treeNoiseValue <= treeThreshold && yMax <= 3) {
+				// Place tree
 				PlaceBuilding(TREE, x,yMax, z);
 			}
 		}
@@ -143,6 +153,7 @@ void World::GenerateFromFile(DeviceResources* deviceRes, std::wstring filePath, 
 
 	Reset();
 
+	// The seed is generated from the filename
 	int treeSeed = 0;
 	for (int i = 0; i < filePath.size(); i++) {
 		treeSeed += filePath.c_str()[i];
@@ -176,7 +187,7 @@ void World::GenerateFromFile(DeviceResources* deviceRes, std::wstring filePath, 
 		while (getline(s, word, ','))
 		{
 			value = atoi(word.c_str());
-
+			// Sample tree noise
 			treeNoiseValue = (perlin.noise2D(x / scale * 2, y / scale * 2) + 1) / 2;
 
 			auto block = GetCube(x, 0, y);
@@ -200,10 +211,12 @@ void World::GenerateFromFile(DeviceResources* deviceRes, std::wstring filePath, 
 			}
 
 			if (yMax == 0) {
+				// Add water
 				auto block = GetCube(x, 1, y);
 				*block = WATER;
 			}
 			else if(treeNoiseValue <= treeThreshold && yMax <= 2) {
+				// Place tree
 				PlaceBuilding(TREE, x, yMax+1, y);
 			}
 
@@ -244,9 +257,6 @@ void World::Draw(Camera* camera, DeviceResources* deviceRes) {
 		}
 	}
 
-
-
-
 	// Clean
 
 	gpuRes->cbModel.data.model = Matrix::Identity;
@@ -271,14 +281,6 @@ void World::DrawBuildings(Camera* camera, DeviceResources* deviceRes)
 		gpuRes->cbModel.data.isInstance = true;
 		gpuRes->cbModel.UpdateBuffer(deviceRes);
 		buildingsPositions[key].model->Draw(deviceRes, true);
-
-		/*
-		for (Vector3 position : *(buildingsPositions[key].positions)) {
-			gpuRes->cbModel.data.model = Matrix::CreateTranslation(position).Transpose();
-			gpuRes->cbModel.UpdateBuffer(deviceRes);
-			buildingsPositions[key].model->Draw(deviceRes);
-		}*/
-
 	}
 }
 
@@ -298,8 +300,8 @@ void World::Reset()
 	for (const auto& [key, value] : buildingsPositions) {
 		value.positions->clear();
 	}
-
-
+	
+	// Reset chunks
 	for (int x = 0; x < WORLD_SIZE; x++) {
 		for (int y = 0; y < WORLD_HEIGHT; y++) {
 			for (int z = 0; z < WORLD_SIZE; z++) {
@@ -376,12 +378,15 @@ void World::PlaceBuilding(Building type, int x, int y, int z)
 	energyGain += buildingsPositions[type].energy;
 	waterGain += buildingsPositions[type].water;
 
+	// Checks to know if the building can generate income / help other building generate income
 	Building typeAdjacent;
 	if (type == ROAD) {
 		for (int i = -1; i < 2; i++) {
 			for (int j = -1; j < 2; j++) {
 				if ((j == 0 || i == 0) && i != j) {
 					typeAdjacent = GetBuilding(x + i, z + j);
+
+					// If there is only 1 road next to this building, then it can generate income
 					if (typeAdjacent != NOTHING && GetAmountOfAdjacentRoads(x + i, z + j) == 1) passiveIncome += buildingsPositions[typeAdjacent].income;
 				}
 			}
@@ -410,12 +415,14 @@ void World::RemoveBuilding(int x, int y, int z)
 			energyGain -= buildingsPositions[type].energy;
 			waterGain -= buildingsPositions[type].water;
 
+			// If the building is a road, check the nearby buildings. They may not be connected to a road anymore
 			Building typeAdjacent;
 			if (type == ROAD) {
 				for (int i = -1; i < 2; i++) {
 					for (int j = -1; j < 2; j++) {
 						if ((j == 0 || i == 0) && i != j) {
 							typeAdjacent = GetBuilding(x + i, z + j);
+							// If there is 0 road next to this building, then it cannot generate income
 							if (typeAdjacent != NOTHING && GetAmountOfAdjacentRoads(x + i, z + j) == 0) passiveIncome -= buildingsPositions[typeAdjacent].income;
 						}
 					}

@@ -16,12 +16,14 @@ Chunk::Chunk(World* world, Vector3 pos) {
 }
 
 BlockId* Chunk::GetCubeLocal(int lx, int ly, int lz) {
+	// If oob, then chunk in neihbor chunks
 	if (lx < 0) return adjXNeg ? adjXNeg->GetCubeLocal(CHUNK_SIZE - 1, ly, lz) : nullptr;
 	if (ly < 0) return adjYNeg ? adjYNeg->GetCubeLocal(lx, CHUNK_SIZE - 1, lz) : nullptr;
 	if (lz < 0) return adjZNeg ? adjZNeg->GetCubeLocal(lx, ly, CHUNK_SIZE - 1) : nullptr;
 	if (lx >= CHUNK_SIZE) return adjXPos ? adjXPos->GetCubeLocal(0, ly, lz) : nullptr;
 	if (ly >= CHUNK_SIZE) return adjYPos ? adjYPos->GetCubeLocal(lx, 0, lz) : nullptr;
 	if (lz >= CHUNK_SIZE) return adjZPos ? adjZPos->GetCubeLocal(lx, ly, 0) : nullptr;
+
 	return &data[lx + ly * CHUNK_SIZE + lz * CHUNK_SIZE * CHUNK_SIZE];
 }
 
@@ -71,12 +73,15 @@ bool Chunk::ShouldRenderFace(int lx, int ly, int lz, int dx, int dy, int dz) {
 	const BlockData& myData = BlockData::Get(*myself);
 	const BlockData& neighData = BlockData::Get(*neighbour);
 
+	// Render if half block 
 	if (neighData.flags & BF_HALF_BLOCK)
 		return true;
-
+	
+	// Check with Cutouts
 	if (neighData.flags & BF_CUTOUT)
 		return !(myData.flags & BF_CUTOUT);
 
+	// Check with transparency
 	bool isNeighTransp = neighData.pass == SP_TRANSPARENT;
 	if (isNeighTransp) {
 		bool isTransp = myData.pass == SP_TRANSPARENT;

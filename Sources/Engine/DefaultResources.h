@@ -7,6 +7,9 @@
 using namespace DirectX;
 using namespace DirectX::SimpleMath;
 
+/// <summary>
+/// Represents the game's default resources (Blend states, Depth States, ...)
+/// </summary>
 class DefaultResources {
 	static DefaultResources* instance;
 public:
@@ -28,7 +31,12 @@ public:
 	ConstantBuffer<ModelData> cbModel;
 
 	DefaultResources();
+	// Gets the DefaultResources
 	static DefaultResources* Get() { return instance; }
 
+	/// <summary>
+	/// Creates the default resources
+	/// </summary>
+	/// <param name="deviceRes">The game's device resources</param>
 	void Create(DeviceResources* deviceRes);
 };

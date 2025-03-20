@@ -2,6 +2,9 @@
 
 using Microsoft::WRL::ComPtr;
 
+/// <summary>
+/// Represents a render target for the game
+/// </summary>
 class RenderTarget {
 public:
 	enum Mode {
@@ -26,8 +29,28 @@ private:
 public:
 	RenderTarget(int width, int height, Mode mode) : width(width), height(height), mode(mode) {};
 
+	/// <summary>
+	/// Creates the render target
+	/// </summary>
+	/// <param name="deviceRes">The game's device resources</param>
 	void Create(DeviceResources* deviceRes);
+
+	/// <summary>
+	/// Clears the render target
+	/// </summary>
+	/// <param name="deviceRes">The game's device resources</param>
 	void Clear(DeviceResources* deviceRes);
+
+	/// <summary>
+	/// Applies the render target
+	/// </summary>
+	/// <param name="deviceRes">The game's device resources</param>
 	void ApplyTarget(DeviceResources* deviceRes);
+
+	/// <summary>
+	/// Applies the render target to the pixel shader
+	/// </summary>
+	/// <param name="deviceRes">The game's device resources</param>
+	/// <param name="slot">The render target's slot</param>
 	void ApplyShaderResourcePS(DeviceResources* deviceRes, int slot);
 };

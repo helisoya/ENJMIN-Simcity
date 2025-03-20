@@ -103,6 +103,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	return static_cast<int>(msg.wParam);
 }
 
+// Toggle the fullscreen for the game
 void ToogleFullscren(HWND hWnd, Game* game) {
 	static bool s_fullscreen = false;
 	if (s_fullscreen) {

@@ -51,12 +51,14 @@ void Cube3D::Generate(DeviceResources* deviceRes) {
 	float uvxSide = (data.texIdSide % 16) / BLOCK_TEXSIZE;
 	float uvySide = (data.texIdSide / 16) / BLOCK_TEXSIZE;
 
+	// Models are different depending on the building type
 	if (buildingType == ROAD) {
+		// Road model
 		data = BlockData::Get(BLACKWOOL);
 		PushFace({ -0.5f, -0.48f, -0.5f }, Vector3::Backward, Vector3::Right, Vector3::Down, data.texIdBottom,false);
 	}
 	else if (buildingType == FACTORY) {
-
+		// Factory model
 		data = BlockData::Get(BRICK);
 
 		Vector3 positions[] = { Vector3(-0.25f,0,-0.25f), Vector3(0.25f,0,-0.25f), Vector3(-0.25f,0,0.25f), Vector3(0.25f,0,0.25f) };
@@ -83,7 +85,7 @@ void Cube3D::Generate(DeviceResources* deviceRes) {
 		PushFace({ -0.3f, -0.5f, -0.3f }, Vector3::Backward * 0.6f, Vector3::Right * 0.6f, Vector3::Down, data.texIdBottom);
 	}
 	else if (buildingType == WATERPLANT) {
-
+		// Water plant model
 		data = BlockData::Get(STONE);
 
 		PushFace({ -0.3f, -0.5f,  0.3f }, Vector3::Up * 0.3f, Vector3::Right * 0.6f, Vector3::Backward, data.texIdSide);
@@ -99,7 +101,7 @@ void Cube3D::Generate(DeviceResources* deviceRes) {
 	}
 
 	else if (buildingType == SHOP) {
-
+		// Shop model
 		data = BlockData::Get(SLAB);
 
 		PushFace({ -0.3f, -0.5f,  0.3f }, Vector3::Up * 0.6f, Vector3::Right * 0.6f, Vector3::Backward, data.texIdSide);
@@ -112,7 +114,7 @@ void Cube3D::Generate(DeviceResources* deviceRes) {
 	}
 
 	else if (buildingType == HOUSE) {
-
+		// House model
 		data = BlockData::Get(WOOD);
 
 		PushFace({ -0.3f, -0.5f,  0.3f }, Vector3::Up * 0.6f, Vector3::Right * 0.6f, Vector3::Backward, data.texIdSide);
@@ -127,7 +129,7 @@ void Cube3D::Generate(DeviceResources* deviceRes) {
 		PushFace({ 0.3f,  0.1f,  0.3f }, Vector3::Left * 0.3f + Vector3::Up * 0.3f, Vector3::Forward * 0.6f, Vector3::Up + Vector3::Right, data.texIdTop);
 	}
 	else if (buildingType == TREE) {
-
+		// Tree model
 		data = BlockData::Get(LOG);
 
 		PushFace({ -0.1f, -0.5f,  0.1f }, Vector3::Up * 0.2f, Vector3::Right * 0.2f, Vector3::Backward, data.texIdSide);
@@ -145,7 +147,7 @@ void Cube3D::Generate(DeviceResources* deviceRes) {
 		PushFace({ -0.25f,  0.2f,  0.25f }, Vector3::Forward * 0.5f, Vector3::Right * 0.5f, Vector3::Up, data.texIdTop);
 	}
 	else if (buildingType == ENERGYPLANT) {
-
+		// Energy plant model
 		Vector3 positions[] = { Vector3(0,0,0), Vector3(-0.3f,0,-0.3f), Vector3(0.3f,0,-0.3f), Vector3(-0.3f,0,0.3f), Vector3(0.3f,0,0.3f) };
 
 		for (Vector3 pos : positions) {
@@ -160,9 +162,7 @@ void Cube3D::Generate(DeviceResources* deviceRes) {
 			data = BlockData::Get(IRON_BLOCK);
 
 			PushFace({ pos.x + -0.1f, pos.y + -0.4f, pos.z + 0.1f }, Vector3::Forward * 0.2f + Vector3::Up * 0.1f, Vector3::Right * 0.2f, Vector3::Up, data.texIdTop);
-		}
-
-
+		}	
 	}
 	else {
 		// Just a plain block
@@ -187,12 +187,14 @@ void Cube3D::Draw(DeviceResources* deviceRes, bool isInstanced) {
 		Generate(deviceRes);
 
 	if (!isInstanced) {
+		// If not instanced, draw normaly
 		if (vb.Size() == 0) return;
 		vb.Apply(deviceRes, 0);
 		ib.Apply(deviceRes);
 		deviceRes->GetD3DDeviceContext()->DrawIndexed(ib.Size(), 0, 0);
 	}
 	else {
+		// If instanced, add the instance buffer to the vertex buffer, then draw
 		UINT strides[2] = { sizeof(VertexLayout_PositionNormalUV), sizeof(Vector3) };
 		UINT offsets[2] = { 0, 0 };
 

@@ -49,16 +49,27 @@ float treeThreshold = 0.4f;
 char filenameBuf[50] = "Coast";
 std::vector<const char*> maps = {"Coast","River","Mountain","Delta", "Islands","Channel","Extreme" };
 
-// Game
+/// <summary>
+/// Creates a new game
+/// </summary>
 Game::Game() noexcept(false) {
 	m_deviceResources = std::make_unique<DeviceResources>(DXGI_FORMAT_B8G8R8A8_UNORM_SRGB, DXGI_FORMAT_D32_FLOAT, 2);
 	m_deviceResources->RegisterDeviceNotify(this);
 }
 
+/// <summary>
+/// Destroys the game
+/// </summary>
 Game::~Game() {
 	g_inputLayouts.clear();
 }
 
+/// <summary>
+/// Initialize the game
+/// </summary>
+/// <param name="window">The game'window</param>
+/// <param name="width">The window's width</param>
+/// <param name="height">The window's height</param>
 void Game::Initialize(HWND window, int width, int height) {
 	// Create input devices
 	m_gamePad = std::make_unique<GamePad>();
@@ -78,22 +89,26 @@ void Game::Initialize(HWND window, int width, int height) {
 	GenerateInputLayout<VertexLayout_PositionColor>(m_deviceResources.get(), &basicShader);
 	//GenerateInputLayout<VertexLayout_PositionNormalUV>(m_deviceResources.get(), &blockShader);
 	GenerateInputLayout<VertexLayout_PositionNormalUVInstanced>(m_deviceResources.get(), &blockShader);
-
+	
+	// Initialize textures
 	texture.Create(m_deviceResources.get());
 	textureSky.Create(m_deviceResources.get());
 
+	// Initialize GPU resources
 	gpuResources.Create(m_deviceResources.get());
 
+	// Initialize player & cameras
 	player.GenerateGPUResources(m_deviceResources.get());
 	player.GetCamera()->UpdateAspectRatio((float)width / (float)height);
 	hudCamera.UpdateSize((float)width, (float)height);
 
+	// Initialize world
 	light.Generate(m_deviceResources.get());
-
 	//world.Generate(m_deviceResources.get(),786768768876,treeThreshold);
 	world.GenerateFromFile(m_deviceResources.get(), L"Coast", treeThreshold);
 	skybox.Generate(m_deviceResources.get());
 
+	// Initialize crossahir for the GUI
 	crosshairLine.PushVertex({ {-7, 0, 1, 1}, {1, 1, 1, 1} });
 	crosshairLine.PushVertex({ {6, 0, 1, 1}, {1, 1, 1, 1} });
 	crosshairLine.PushVertex({ {0, -6, 1, 1}, {1, 1, 1, 1} });
@@ -101,6 +116,8 @@ void Game::Initialize(HWND window, int width, int height) {
 
 	crosshairLine.Create(m_deviceResources.get());
 
+
+	// Initialize ImGui
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -111,6 +128,9 @@ void Game::Initialize(HWND window, int width, int height) {
 	ImGui_ImplDX11_Init(m_deviceResources.get()->GetD3DDevice(), m_deviceResources.get()->GetD3DDeviceContext());
 }
 
+/// <summary>
+/// Updates the game, then renders it
+/// </summary>
 void Game::Tick() {
 	// DX::StepTimer will compute the elapsed time and call Update() for us
 	// We pass Update as a callback to Tick() because StepTimer can be set to a "fixed time" step mode, allowing us to call Update multiple time in a row if the framerate is too low (useful for physics stuffs)
@@ -119,7 +139,10 @@ void Game::Tick() {
 	Render(m_timer);
 }
 
-// Updates the world.
+/// <summary>
+/// Updates the game's
+/// </summary>
+/// <param name="timer">The game's timer</param>
 void Game::Update(DX::StepTimer const& timer) {
 
 	ImGui_ImplDX11_NewFrame();
@@ -140,7 +163,10 @@ void Game::Update(DX::StepTimer const& timer) {
 	auto const pad = m_gamePad->GetState(0);
 }
 
-// Draws the scene.
+/// <summary>
+/// Draws the scene
+/// </summary>
+/// <param name="timer">The game's timer</param>
 void Game::Render(DX::StepTimer const& timer) {
 	// Don't try to render anything before the first Update.
 	if (m_timer.GetFrameCount() == 0)
@@ -196,8 +222,10 @@ void Game::Render(DX::StepTimer const& timer) {
 	crosshairLine.Apply(m_deviceResources.get());
 	context->Draw(4, 0);
 
+	// Render All
 	m_deviceResources->Present();
-
+	
+	// Render ImGui
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
@@ -236,12 +264,33 @@ void Game::OnWindowSizeChanged(int width, int height) {
 	hudCamera.UpdateSize((float)width, (float)height);
 }
 
+void Game::OnDeviceLost() {
+	// We have lost the graphics card, we should reset resources [TODO]
+}
+
+void Game::OnDeviceRestored() {
+	// We have a new graphics card context, we should realloc resources [TODO]
+}
+
+// Properties
+void Game::GetDefaultSize(int& width, int& height) const noexcept {
+	width = 800;
+	height = 600;
+}
+
+#pragma endregion
+
+
+/// <summary>
+/// Represents the ImGui UI
+/// </summary>
+/// <param name="timer"></param>
 void Game::Im(DX::StepTimer const& timer)
 {
 	bool open = true;
 	ImGui::Begin("GUI", &open);
 	ImGui::SetWindowSize(ImVec2(500, 600));
-	
+
 	if (ImGui::CollapsingHeader("General")) {
 		ImGui::Text("FPS : ");
 		ImGui::SameLine();
@@ -255,9 +304,9 @@ void Game::Im(DX::StepTimer const& timer)
 		ImGui::Text("Seed : ");
 		ImGui::SameLine();
 
-		ImGui::InputInt(" ",&seed);
+		ImGui::InputInt(" ", &seed);
 		if (ImGui::Button("Generate from seed")) {
-			world.Generate(m_deviceResources.get(),seed, treeThreshold);
+			world.Generate(m_deviceResources.get(), seed, treeThreshold);
 			player.Reset();
 		}
 
@@ -266,7 +315,7 @@ void Game::Im(DX::StepTimer const& timer)
 
 		ImGui::Text("Filename : ");
 		ImGui::SameLine();
-		ImGui::InputText("  ", filenameBuf,50);
+		ImGui::InputText("  ", filenameBuf, 50);
 		if (ImGui::Button("Generate from file")) {
 			const size_t cSize = strlen(filenameBuf) + 1;
 			wchar_t* wc = new wchar_t[cSize];
@@ -300,7 +349,7 @@ void Game::Im(DX::StepTimer const& timer)
 	if (ImGui::CollapsingHeader("Controls")) {
 		ImGui::Text("Left Click : Build (If you have enough money)");
 		ImGui::Text("Build your city.");
-		ImGui::Text("Money is earned with taxes"); 
+		ImGui::Text("Money is earned with taxes");
 		ImGui::Text("Taxes are divided by 2 if there is not enough energy and water.");
 		ImGui::Text("Buildings give taxes only when near a road.");
 		ImGui::Text("Water plant must be built near a water source.");
@@ -309,19 +358,3 @@ void Game::Im(DX::StepTimer const& timer)
 	player.Im(timer);
 	ImGui::End();
 }
-
-void Game::OnDeviceLost() {
-	// We have lost the graphics card, we should reset resources [TODO]
-}
-
-void Game::OnDeviceRestored() {
-	// We have a new graphics card context, we should realloc resources [TODO]
-}
-
-// Properties
-void Game::GetDefaultSize(int& width, int& height) const noexcept {
-	width = 800;
-	height = 600;
-}
-
-#pragma endregion
