@@ -1,0 +1,3 @@
+C:\Users\oudot\Documents\GitHub\TP-ENJMIN_Moteur\Deps\DirectXTK\Bin\Desktop_2022\x64\Debug\DirectXTK.lib
+C:\Users\oudot\Documents\GitHub\TP-ENJMIN_SimCity\Deps\DirectXTK\Bin\Desktop_2022\x64\Debug\DirectXTK.lib
+C:\Users\oudot\Documents\GitHub\ENJMIN-Simcity\Deps\DirectXTK\Bin\Desktop_2022\x64\Debug\DirectXTK.lib
