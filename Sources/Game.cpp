@@ -47,7 +47,7 @@ bool showGUI = true;
 int seed = 786768768876;
 float treeThreshold = 0.4f;
 char filenameBuf[50] = "Coast";
-std::vector<const char*> maps = {"Coast","River","Mountain","Delta", "Islands","Channel","Extreme" };
+std::vector<const char*> maps = {"Coast","River","Mountain","Delta", "Islands","Channel","Extreme","HighCoast" };
 
 /// <summary>
 /// Creates a new game
@@ -348,6 +348,8 @@ void Game::Im(DX::StepTimer const& timer)
 	}
 	if (ImGui::CollapsingHeader("Controls")) {
 		ImGui::Text("Left Click : Build (If you have enough money)");
+		ImGui::Text("ZQSD : Movements");
+		ImGui::Text("A/E : Rotate the camera");
 		ImGui::Text("Build your city.");
 		ImGui::Text("Money is earned with taxes");
 		ImGui::Text("Taxes are divided by 2 if there is not enough energy and water.");

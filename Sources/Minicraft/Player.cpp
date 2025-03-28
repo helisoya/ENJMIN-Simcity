@@ -6,6 +6,7 @@
 #include <Engine/StepTimer.h>
 #include "string"
 #include "iostream"
+#include "Chunk.h"
 
 using ButtonState = Mouse::ButtonStateTracker::ButtonState;
 
@@ -49,7 +50,7 @@ void Player::Update(float dt, DirectX::Keyboard::State kb, DirectX::Mouse::State
 
 
 	// Rotation
-	int rotationSide = (kb.E ? 1 : 0) - (kb.A ? 1 : 0);
+	int rotationSide = (kb.A ? 1 : 0) - (kb.E ? 1 : 0);
 	if (rotationSide != 0) {
 		currentYaw += rotationSide * dt * 0.8f;
 		if (currentYaw < -360.0f) currentYaw += 360.f;
@@ -75,16 +76,29 @@ void Player::Update(float dt, DirectX::Keyboard::State kb, DirectX::Mouse::State
 	// Raycast for a cube to place a building on
 	auto cubes = Raycast(camera.GetPosition(), camera.Forward(), 100);
 	for (int i = 0; i < cubes.size(); i++) {
+
 		BlockId* block = world->GetCube(cubes[i][0], cubes[i][1], cubes[i][2]);
-		if (block == nullptr || cubes[i][1] >= 16 || cubes[i][1] < 0) continue; 
+		if (block == nullptr || cubes[i][1] >= 16 || cubes[i][1] < 0) continue;
 		BlockData blockData = BlockData::Get(*block);
 		if (blockData.flags & BF_NO_RAYCAST) continue;
 
+
 		// Cube exists AND its raycastable
 
-		highlightCube.model = Matrix::CreateTranslation(cubes[i][0], cubes[i][1], cubes[i][2]);
+		int actualHeight = cubes[i][1];
+		while (actualHeight < CHUNK_SIZE - 1 && *world->GetCube(cubes[i][0], actualHeight + 1, cubes[i][2]) != EMPTY) {
+			actualHeight++;
+		}
 
-		if ((cubes[i][1] != 1 && cubes[i][1] != 2)) continue;
+		block = world->GetCube(cubes[i][0], actualHeight, cubes[i][2]);
+		if (block == nullptr || actualHeight >= 16 || actualHeight < 0) continue;
+		blockData = BlockData::Get(*block);
+		if (blockData.flags & BF_NO_RAYCAST) continue;
+
+
+		highlightCube.model = Matrix::CreateTranslation(cubes[i][0], actualHeight, cubes[i][2]);
+
+		if (actualHeight != 1 && actualHeight != 2) break;
 
 		// The cube is a the required height (1 - 2)
 
