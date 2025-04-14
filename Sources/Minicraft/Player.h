@@ -33,6 +33,10 @@ class Player {
 
 	DirectX::Mouse::ButtonStateTracker      mouseTracker;
 	DirectX::Keyboard::KeyboardStateTracker keyboardTracker;
+
+	int screenWidth = 800;
+	int screenHeight = 600;
+
 public:
 	Player(World* w, Vector3 pos) : world(w), position(pos){}
 
@@ -58,6 +62,13 @@ public:
 
 	// Resets the player
 	void Reset();
+
+	/// <summary>
+	/// Changes the screen's size for the player
+	/// </summary>
+	/// <param name="width">The screen width</param>
+	/// <param name="height">The screen height</param>
+	void SetScreenSize(int width, int height);
 
 	// ImGui pass for the player
 	void Im(DX::StepTimer const& timer);

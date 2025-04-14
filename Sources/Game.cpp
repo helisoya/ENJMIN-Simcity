@@ -32,7 +32,6 @@ DefaultResources gpuResources;
 Shader basicShader(L"Basic");
 Shader blockShader(L"Block");
 Shader skyboxShader(L"Skybox");
-VertexBuffer<VertexLayout_PositionColor> crosshairLine;
 
 Texture texture(L"terrain");
 Texture textureSky(L"skybox");
@@ -100,6 +99,7 @@ void Game::Initialize(HWND window, int width, int height) {
 	// Initialize player & cameras
 	player.GenerateGPUResources(m_deviceResources.get());
 	player.GetCamera()->UpdateAspectRatio((float)width / (float)height);
+	player.SetScreenSize(width, height);
 	hudCamera.UpdateSize((float)width, (float)height);
 
 	// Initialize world
@@ -108,13 +108,7 @@ void Game::Initialize(HWND window, int width, int height) {
 	world.GenerateFromFile(m_deviceResources.get(), L"Coast", treeThreshold);
 	skybox.Generate(m_deviceResources.get());
 
-	// Initialize crossahir for the GUI
-	crosshairLine.PushVertex({ {-7, 0, 1, 1}, {1, 1, 1, 1} });
-	crosshairLine.PushVertex({ {6, 0, 1, 1}, {1, 1, 1, 1} });
-	crosshairLine.PushVertex({ {0, -6, 1, 1}, {1, 1, 1, 1} });
-	crosshairLine.PushVertex({ {0, 7, 1, 1}, {1, 1, 1, 1} });
 
-	crosshairLine.Create(m_deviceResources.get());
 
 
 	// Initialize ImGui
@@ -219,7 +213,6 @@ void Game::Render(DX::StepTimer const& timer) {
 	ApplyInputLayout<VertexLayout_PositionColor>(m_deviceResources.get());
 	basicShader.Apply(m_deviceResources.get());
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-	crosshairLine.Apply(m_deviceResources.get());
 	context->Draw(4, 0);
 
 	// Render All
@@ -260,6 +253,7 @@ void Game::OnWindowSizeChanged(int width, int height) {
 
 	// The windows size has changed:
 	// We can realloc here any resources that depends on the target resolution (post processing etc)
+	player.SetScreenSize(width, height);
 	player.GetCamera()->UpdateAspectRatio((float)width / (float)height);
 	hudCamera.UpdateSize((float)width, (float)height);
 }

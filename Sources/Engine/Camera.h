@@ -61,8 +61,13 @@ public:
 
 	// Gets the view matrix of the camera
 	Matrix GetViewMatrix() const { return view; }
-	// Gets the inverse matrix of the view camera
+	// Gets the inverse view matrix of the camera
 	Matrix GetInverseViewMatrix() const { return view.Invert(); }
+
+	// Gets the projection matrix of the camera
+	Matrix GetProjectionMatrix() const { return projection; }
+	// Gets the inverse projection matrix of the camera
+	Matrix GetInverseProjectionMatrix() const { return projection.Invert(); }
 
 	/// <summary>
 	/// Applies the camera

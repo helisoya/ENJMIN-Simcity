@@ -74,7 +74,18 @@ void Player::Update(float dt, DirectX::Keyboard::State kb, DirectX::Mouse::State
 	else if (kb.D7) currentBuildingIdx = 6;
 
 	// Raycast for a cube to place a building on
-	auto cubes = Raycast(camera.GetPosition(), camera.Forward(), 100);
+
+	Vector3 pickRayViewSpace;
+	pickRayViewSpace.x = (((2.0f * ms.x) / screenWidth) - 1) / camera.GetProjectionMatrix()(0, 0);
+	pickRayViewSpace.y = -(((2.0f * ms.y) / screenHeight) - 1) / camera.GetProjectionMatrix()(1, 1);
+	pickRayViewSpace.z = 1.0f;
+
+	Vector3 pickRayViewSpaceDir(pickRayViewSpace.x, pickRayViewSpace.y, pickRayViewSpace.z);
+
+	pickRayViewSpaceDir = XMVector3TransformNormal(pickRayViewSpaceDir, camera.GetViewMatrix());
+	pickRayViewSpaceDir.z *= -1.0f;
+
+	auto cubes = Raycast(camera.GetPosition(), pickRayViewSpaceDir, 100);
 	for (int i = 0; i < cubes.size(); i++) {
 
 		BlockId* block = world->GetCube(cubes[i][0], cubes[i][1], cubes[i][2]);
@@ -152,6 +163,12 @@ void Player::Reset()
 {
 	money = 100;
 	passiveIncomeCooldown = 10;
+}
+
+void Player::SetScreenSize(int width, int height)
+{
+	screenHeight = height;
+	screenWidth = width;
 }
 
 void Player::Im(DX::StepTimer const& timer)
