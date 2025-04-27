@@ -11,11 +11,11 @@
 #include "Engine/VertexLayout.h"
 #include "Engine/Texture.h"
 #include "Engine/DefaultResources.h"
-#include "Minicraft/World.h"
-#include "Minicraft/Player.h"
-#include "Minicraft/Utils.h"
+#include "CityBuilder/World.h"
+#include "CityBuilder/Player.h"
+#include "CityBuilder/Utils.h"
 #include "Engine/Light.h"
-#include "Minicraft/Skybox.h"
+#include "CityBuilder/Skybox.h"
 #include "string"
 #include "iostream"
 
@@ -343,6 +343,7 @@ void Game::Im(DX::StepTimer const& timer)
 	if (ImGui::CollapsingHeader("Controls")) {
 		ImGui::Text("Left Click : Build (If you have enough money)");
 		ImGui::Text("ZQSD : Movements");
+		ImGui::Text("Mouse Wheel : Zoom");
 		ImGui::Text("A/E : Rotate the camera");
 		ImGui::Text("Build your city.");
 		ImGui::Text("Money is earned with taxes");

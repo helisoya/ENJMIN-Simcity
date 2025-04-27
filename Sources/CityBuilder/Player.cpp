@@ -75,6 +75,13 @@ void Player::Update(float dt, DirectX::Keyboard::State kb, DirectX::Mouse::State
 
 	// Raycast for a cube to place a building on
 
+	float mouseX = ms.x;
+	float mouseY = ms.y;
+	float a_width = screenWidth;
+	float a_height = screenHeight;
+	float a_nearZ = 0.01f;
+	float a_farZ = 500.0f;
+
 	Vector3 pickRayViewSpace;
 	pickRayViewSpace.x = (((2.0f * ms.x) / screenWidth) - 1) / camera.GetProjectionMatrix()(0, 0);
 	pickRayViewSpace.y = -(((2.0f * ms.y) / screenHeight) - 1) / camera.GetProjectionMatrix()(1, 1);

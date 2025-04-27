@@ -2,8 +2,8 @@
 
 #include "Engine/Buffers.h"
 #include "Engine/VertexLayout.h"
-#include "Minicraft/World.h"
-#include "Minicraft/Block.h"
+#include "CityBuilder/World.h"
+#include "CityBuilder/Block.h"
 
 #define CHUNK_SIZE 16
 class World;

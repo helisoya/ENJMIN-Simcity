@@ -2,13 +2,13 @@
 
 #include "Engine/BlendState.h"
 #include "Engine/Camera.h"
-#include "Minicraft/Block.h"
+#include "CityBuilder/Block.h"
 
 #define WORLD_SIZE 6
 #define WORLD_HEIGHT 1
 
 class Chunk;
-class Cube3D;
+class Building3D;
 
 /// <summary>
 /// Represents the different building in the game
@@ -32,7 +32,7 @@ enum Building {
 /// Represents a building's data
 /// </summary>
 struct BuildingData {
-	Cube3D* model;
+	Building3D* model;
 	std::vector<Vector3>* positions;
 	int energy;
 	int water;

@@ -1,9 +1,9 @@
 #include "pch.h"
 
-#include "Cube3D.h"
+#include "Building3D.h"
 #include "Utils.h"
 
-void Cube3D::PushFace(Vector3 pos, Vector3 up, Vector3 right, Vector3 normal, int id, bool front) {
+void Building3D::PushFace(Vector3 pos, Vector3 up, Vector3 right, Vector3 normal, int id, bool front) {
 	Vector2 uv(
 		(id % 16) * BLOCK_TEXSIZE,
 		(id / 16) * BLOCK_TEXSIZE
@@ -24,7 +24,7 @@ void Cube3D::PushFace(Vector3 pos, Vector3 up, Vector3 right, Vector3 normal, in
 
 }
 
-void Cube3D::PushTriangle(Vector3 a, Vector3 b, Vector3 c, Vector3 normal, int id, bool front)
+void Building3D::PushTriangle(Vector3 a, Vector3 b, Vector3 c, Vector3 normal, int id, bool front)
 {
 	Vector2 uv(
 		(id % 16) * BLOCK_TEXSIZE,
@@ -43,7 +43,7 @@ void Cube3D::PushTriangle(Vector3 a, Vector3 b, Vector3 c, Vector3 normal, int i
 	}
 }
 
-void Cube3D::Generate(DeviceResources* deviceRes) {
+void Building3D::Generate(DeviceResources* deviceRes) {
 	vb.Clear();
 	ib.Clear();
 
@@ -182,7 +182,7 @@ void Cube3D::Generate(DeviceResources* deviceRes) {
 	needRegen = false;
 }
 
-void Cube3D::Draw(DeviceResources* deviceRes, bool isInstanced) {
+void Building3D::Draw(DeviceResources* deviceRes, bool isInstanced) {
 	if (needRegen)
 		Generate(deviceRes);
 
@@ -209,7 +209,7 @@ void Cube3D::Draw(DeviceResources* deviceRes, bool isInstanced) {
 
 }
 
-void Cube3D::ResetInstanceBuffer(DeviceResources* deviceRes, std::vector<Vector3>* positions)
+void Building3D::ResetInstanceBuffer(DeviceResources* deviceRes, std::vector<Vector3>* positions)
 {
 	instbuffer.data = *positions;
 	instbuffer.Create(deviceRes);

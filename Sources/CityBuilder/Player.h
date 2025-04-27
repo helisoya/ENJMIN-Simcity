@@ -3,8 +3,8 @@
 #include "Engine/DepthState.h"
 #include "Engine/Camera.h"
 #include "Engine/StepTimer.h"
-#include "Minicraft/World.h"
-#include "Minicraft/Cube3D.h"
+#include "CityBuilder/World.h"
+#include "CityBuilder/Building3D.h"
 
 using namespace DirectX::SimpleMath;
 
@@ -20,7 +20,7 @@ class Player {
 
 	PerspectiveCamera camera = PerspectiveCamera(75, 1);
 
-	Cube3D highlightCube = Cube3D(NOTHING);
+	Building3D highlightCube = Building3D(NOTHING);
 	Building possibleBuildings[7] = {NOTHING,ROAD,HOUSE,SHOP,FACTORY,ENERGYPLANT,WATERPLANT};
 	char* buildingsNames[7] = { "Destroy","Road","House","Shop","Factory","Energy Plant","Water Plant" };
 	int prices[7] = {25,2,4,6,10,15,15};

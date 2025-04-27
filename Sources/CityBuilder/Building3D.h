@@ -2,14 +2,14 @@
 
 #include "Engine/Buffers.h"
 #include "Engine/VertexLayout.h"
-#include "Minicraft/World.h"
-#include "Minicraft/Block.h"
+#include "CityBuilder/World.h"
+#include "CityBuilder/Block.h"
 
 /// <summary>
 /// Represents a 3D Model
 /// In the case of this game, it's the building models
 /// </summary>
-class Cube3D {
+class Building3D {
 	Building buildingType;
 
 	VertexBuffer<VertexLayout_PositionNormalUV> vb;
@@ -20,7 +20,7 @@ class Cube3D {
 public:
 	Matrix model = Matrix::Identity;
 
-	Cube3D(Building type) : buildingType(type) {}
+	Building3D(Building type) : buildingType(type) {}
 
 	// Gets the linked building of this model
 	Building GetBuilding() const { return buildingType; }
